@@ -115,7 +115,7 @@ public class TestKVServer extends TestCase {
 	}
 
 	//
-	//del() tests
+	//del() test
 	//
 	@Test
 	public void delTest1() throws KVException {
