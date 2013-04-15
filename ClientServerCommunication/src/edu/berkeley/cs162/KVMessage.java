@@ -218,6 +218,8 @@ public class KVMessage {
 				if (this.message != null) {
 					includeMsg = true;
 				}
+				//TODO: if all 3 are true, complain?
+				// or if it doesnt satisfy only msg or only key/value then complain
 		    } else {
 		    	//unknown or incorrectly formatted msgType
 		    	KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Message format incorrect");
