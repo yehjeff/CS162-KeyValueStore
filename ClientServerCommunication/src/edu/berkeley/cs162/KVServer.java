@@ -73,12 +73,13 @@ public class KVServer implements KeyValueInterface {
 		}
 		
 		dataCache.getWriteLock(key).lock();
-		dataCache.put(key,value);
-		dataCache.getWriteLock(key).unlock();
 		
+		dataCache.put(key,value);
 		storeLock.lock();
 		dataStore.put(key,value);
 		storeLock.unlock();
+		
+		dataCache.getWriteLock(key).unlock();
 
 		// Must be called before return or abnormal exit
 		AutoGrader.agKVServerPutFinished(key, value);
@@ -88,7 +89,7 @@ public class KVServer implements KeyValueInterface {
 		// Must be called before anything else
 		AutoGrader.agKVServerGetStarted(key);
 
-		// TODO: implement m
+		// TODO: implement me
 		
 		try {
 			checkKey(key);
@@ -99,6 +100,7 @@ public class KVServer implements KeyValueInterface {
 		dataCache.getWriteLock(key).lock();
 		String valueToReturn = dataCache.get(key);
 		if (valueToReturn == null) {
+			
 			storeLock.lock();
 			valueToReturn = dataStore.get(key);
 			storeLock.unlock();
@@ -126,12 +128,13 @@ public class KVServer implements KeyValueInterface {
 		}
 		
 		dataCache.getWriteLock(key).lock();
-		dataCache.del(key);
-		dataCache.getWriteLock(key).unlock();
 		
+		dataCache.del(key);
 		storeLock.lock();
 		dataStore.del(key);
 		storeLock.lock();
+		
+		dataCache.getWriteLock(key).unlock();
 
 		// Must be called before return or abnormal exit
 		AutoGrader.agKVServerDelFinished(key);
