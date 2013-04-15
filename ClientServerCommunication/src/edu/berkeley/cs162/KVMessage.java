@@ -31,8 +31,11 @@
 package edu.berkeley.cs162;
 
 import java.io.FilterInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
+import javax.xml.parsers.*;
 
 
 /**
@@ -88,11 +91,28 @@ public class KVMessage {
 	 * @throws KVException of type "resp" with message "Message format incorrect" if msgType is unknown
 	 */
 	public KVMessage(String msgType) throws KVException {
-	    // TODO: implement me
+		//first check for valid msgType where valid = getreq, putreq. delreq, or resp
+	    if ((msgType == "getreq") || (msgType == "putreq") || (msgType == "delreq") || (msgType == "resp")) {
+	    	//passed msgType checking
+	    	this.msgType = msgType;
+	    } else {
+	    	//unknown or incorrectly formatted msgType
+	    	KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Message format incorrect");
+	    	throw new KVException(exceptMsg);
+	    }
 	}
 	
 	public KVMessage(String msgType, String message) throws KVException {
-        // TODO: implement me
+		//first check for valid msgType where valid = getreq, putreq. delreq, or resp
+	    if ((msgType == "getreq") || (msgType == "putreq") || (msgType == "delreq") || (msgType == "resp")) {
+	    	//passed msgType checking
+	    	this.msgType = msgType;
+	    	this.message = message;
+	    } else {
+	    	//unknown or incorrectly formatted msgType
+	    	KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Message format incorrect");
+	    	throw new KVException(exceptMsg);
+	    }
 	}
 	
 	 /***
@@ -104,7 +124,7 @@ public class KVMessage {
      * c. "Message format incorrect" - if there message does not conform to the required specifications. Examples include incorrect message type. 
      */
 	public KVMessage(InputStream input) throws KVException {
-	     // TODO: implement me
+	     // TODO: implement me, needs parsers... sad times
 	}
 	
 	/**
@@ -118,6 +138,17 @@ public class KVMessage {
 	}
 	
 	public void sendMessage(Socket sock) throws KVException {
-	      // TODO: implement me
+		try {
+			OutputStream outStream = sock.getOutputStream();
+	      	String outputMsg = this.toXML();
+	      	byte[] toSend = outputMsg.getBytes();
+	      	outStream.write(toSend);
+	      	outStream.close();
+		} catch (IOException IOErr) {
+			KVMessage exceptMsg = new KVMessage("resp", "Network Error: Could not send data");
+			throw new KVException(exceptMsg);
+		} catch (KVException KVErr) {
+			throw KVErr;
+		}
 	}
 }
