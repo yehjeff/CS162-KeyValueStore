@@ -37,6 +37,7 @@ import java.util.concurrent.locks.*;
 public class ThreadPool {
 	/**
 	 * Set of threads in the threadpool
+	 * More instance variables
 	 */
 	protected Thread threads[] = null;
 	

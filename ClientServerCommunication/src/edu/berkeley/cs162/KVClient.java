@@ -51,6 +51,8 @@ public class KVClient implements KeyValueInterface {
 	/**
 	 * @param server is the DNS reference to the Key-Value server
 	 * @param port is the port on which the Key-Value server is listening
+	 * 
+	 * Filled in, no tests written yet
 	 */
 	public KVClient(String server, int port) {
 		this.server = server;
