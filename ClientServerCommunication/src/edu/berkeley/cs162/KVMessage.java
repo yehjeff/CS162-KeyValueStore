@@ -37,6 +37,12 @@ import java.io.OutputStream;
 import java.net.Socket;
 import javax.xml.parsers.*;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
 
 /**
  * This is the object that is used to generate messages the XML based messages 
@@ -124,7 +130,48 @@ public class KVMessage {
      * c. "Message format incorrect" - if there message does not conform to the required specifications. Examples include incorrect message type. 
      */
 	public KVMessage(InputStream input) throws KVException {
-	     // TODO: implement me, needs parsers... sad times
+	     try {
+	    	 DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+	    	//do the parsing now
+	    	 Document doc = builder.parse(input);
+	    	 //finds the first (and theoretically only) KVMessage tag
+	    	 Node KVmsg = doc.getElementsByTagName("KVMessage").item(0);
+	    	 //casts the node as an element (which extends node) to access attributes.
+	    	 Element KVElement = (Element) KVmsg;
+	    	 //gets the msgType from KVMessage's attribute field
+	    	 this.msgType = KVElement.getAttribute("type");
+	    	 //find the known element nodes inside the KVMessage
+	    	 Node keyNode =  KVElement.getElementsByTagName("Key").item(0); 
+	    	 Node valueNode =  KVElement.getElementsByTagName("Value").item(0);
+	    	 Node messageNode =  KVElement.getElementsByTagName("Message").item(0);
+	    	 //make sure the found element node is not null (i.e. the KVMessage didn't have that tag) before setting it
+	    	 if (keyNode != null) {
+	    		 this.key = keyNode.getTextContent();
+	    	 }
+	    	 if (valueNode != null) {
+	    		 this.value = valueNode.getTextContent();
+	    	 }
+	    	 if (messageNode != null) {
+	    		 this.message = messageNode.getTextContent();
+	    	 }
+	    	 // NOTE: do we need to close the input stream? the TA didn't mention needing to
+	    	 
+	     } catch (IOException IOErr) {
+	    	 KVMessage exceptMsg = new KVMessage("resp", "Network Error: Could not receive data");
+	    	 throw new KVException(exceptMsg);
+	     } catch (SAXException SAXErr) {
+	    	 //parsing error
+	    	 KVMessage exceptMsg = new KVMessage("resp", "XML Error: Received unparseable message");
+	    	 throw new KVException(exceptMsg);
+	     } catch (IllegalArgumentException IllArgErr) {
+	    	 //if input stream is null this gets thrown by parse
+	    	 KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: NULL Input Stream");
+	    	 throw new KVException(exceptMsg);
+	     } catch (ParserConfigurationException ParsConfErr) {
+	    	 //document builder cannot be created with requested configuration
+	    	 KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Document builder cannot be created with requested configuration");
+	    	 throw new KVException(exceptMsg);
+	     }
 	}
 	
 	/**
@@ -134,7 +181,7 @@ public class KVMessage {
 	 */
 	public String toXML() throws KVException {
         return null;
-	      // TODO: implement me
+	      // TODO: implement me, use a parser to create the xml! (makes it safe from injections)
 	}
 	
 	public void sendMessage(Socket sock) throws KVException {
