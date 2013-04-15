@@ -30,7 +30,9 @@
  */
 package edu.berkeley.cs162;
 
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+import java.util.LinkedList;
+
+import java.util.concurrent.locks.*;
 
 
 /**
@@ -41,7 +43,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 public class KVCache implements KeyValueInterface {	
 	private int numSets = 100;
 	private int maxElemsPerSet = 10;
-		
+	private Entry sets[][];
+	LinkedList<Entry> set2CQueues[];
+	Lock setLocks[];
 	/**
 	 * Creates a new LRU cache.
 	 * @param cacheSize	the maximum number of entries that will be kept in this cache.
@@ -49,6 +53,18 @@ public class KVCache implements KeyValueInterface {
 	public KVCache(int numSets, int maxElemsPerSet) {
 		this.numSets = numSets;
 		this.maxElemsPerSet = maxElemsPerSet;     
+		sets = new Entry[numSets][maxElemsPerSet];
+		set2CQueues = (LinkedList<Entry>[]) new LinkedList<?>[numSets];	
+		setLocks = new Lock[numSets];
+		for (int i = 0; i < numSets; i++){
+			sets[i] = new Entry[maxElemsPerSet];
+			set2CQueues[i] = new LinkedList<Entry>();
+			setLocks[i] = new ReentrantLock();
+			for (int j = 0; j < maxElemsPerSet; j++){
+				sets[i][j] = new Entry();
+			}
+		}
+		
 		// TODO: Implement Me!
 	}
 
@@ -62,12 +78,20 @@ public class KVCache implements KeyValueInterface {
 		// Must be called before anything else
 		AutoGrader.agCacheGetStarted(key);
 		AutoGrader.agCacheGetDelay();
-        
+        String valueToReturn = null;
 		// TODO: Implement Me!
+		int setId = this.getSetId(key);
+		for (int i = 0; i < this.maxElemsPerSet; i++){
+			Entry entry = this.sets[setId][i];
+			if (entry.getKey().equals(key) && entry.isValid()){
+				entry.turnOnReferenceBit();
+				valueToReturn = entry.getValue();			
+			}
+		}
 		
 		// Must be called before returning
 		AutoGrader.agCacheGetFinished(key);
-		return null;
+		return valueToReturn;
 	}
 
 	/**
@@ -83,11 +107,48 @@ public class KVCache implements KeyValueInterface {
 		// Must be called before anything else
 		AutoGrader.agCachePutStarted(key, value);
 		AutoGrader.agCachePutDelay();
-
 		// TODO: Implement Me!
+		int setId = this.getSetId(key);
+		
+		for (int i = 0; i < this.maxElemsPerSet; i++){
+			Entry entry = this.sets[setId][i];
+			if (entry.getKey().equals(key) && entry.isValid()){
+				entry.setValue(value);
+				entry.turnOffReferenceBit();
+				AutoGrader.agCachePutFinished(key, value);
+				return;
+			}
+		}
+		
+		for (int i = 0; i < this.maxElemsPerSet; i++){
+			Entry entry = this.sets[setId][i];
+			if (!entry.isValid()){
+				entry.setValue(value);
+				entry.setKey(key);
+				entry.turnOffReferenceBit();
+				entry.turnOnValidBit();
+				set2CQueues[setId].addLast(entry);
+				AutoGrader.agCachePutFinished(key, value);
+				return;
+				
+			}
+		}
+		
+		Entry entry = set2CQueues[setId].removeFirst();
+		while (entry.getReferenceBit()){
+			entry.turnOffReferenceBit();
+			set2CQueues[setId].addLast(entry);
+			entry = set2CQueues[setId].removeFirst();
+		}
+		entry.setValue(value);
+		entry.setKey(key);
+		entry.turnOnReferenceBit();
+		entry.turnOnValidBit();
+		set2CQueues[setId].addLast(entry);
+		AutoGrader.agCachePutFinished(key, value);
+		return;
 		
 		// Must be called before returning
-		AutoGrader.agCachePutFinished(key, value);
 	}
 
 	/**
@@ -101,7 +162,12 @@ public class KVCache implements KeyValueInterface {
 		AutoGrader.agCacheDelDelay();
 		
 		// TODO: Implement Me!
-		
+		int setId = this.getSetId(key);
+		for (int i = 0; i < this.maxElemsPerSet; i++){
+			Entry entry = this.sets[setId][i];
+			if (entry.getKey().equals(key) && entry.isValid())
+				entry.turnOffValidBit();
+		}
 		// Must be called before returning
 		AutoGrader.agCacheDelFinished(key);
 	}
@@ -110,9 +176,10 @@ public class KVCache implements KeyValueInterface {
 	 * @param key
 	 * @return	the write lock of the set that contains key.
 	 */
-	public WriteLock getWriteLock(String key) {
+	public Lock getWriteLock(String key) {
 	    // TODO: Implement Me!
-	    return null;
+		int setId = this.getSetId(key);
+		return this.setLocks[setId];
 	}
 	
 	/**
@@ -127,5 +194,58 @@ public class KVCache implements KeyValueInterface {
     public String toXML() {
         // TODO: Implement Me!
         return null;
+    }
+    
+    private class Entry{
+    	private String key;
+    	private String value;
+    	private boolean referenceBit;
+    	private boolean valid;
+    	
+    	public Entry(){
+    		this.valid = false;
+    	}
+    	
+    	public String getKey(){
+    		return this.key;
+    	}
+    	
+    	public void setKey(String key){
+    		this.key = key;
+    	}
+    	
+    	public String getValue(){
+    		return this.value;
+    	}
+    	
+    	public void setValue(String value){
+    		this.value = value;
+    	}
+    	
+    	public boolean getReferenceBit(){
+    		return this.referenceBit;
+    	}
+    	
+    	public void turnOnReferenceBit(){
+    		this.referenceBit = true;
+    	}
+    	
+    	public void turnOffReferenceBit(){
+    		this.referenceBit = false;
+    	}
+    	
+    	public boolean isValid(){
+    		return this.valid;
+    	}
+    	
+    	public void turnOnValidBit(){
+    		this.valid = true;
+    	}
+    	
+    	public void turnOffValidBit(){
+    		this.valid = false;
+    	}
+    	
+    	
     }
 }
