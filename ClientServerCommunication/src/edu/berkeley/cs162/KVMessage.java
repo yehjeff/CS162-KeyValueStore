@@ -37,7 +37,7 @@ import java.net.Socket;
 
 /**
  * This is the object that is used to generate messages the XML based messages 
- * for communication between clients and servers. ...
+ * for communication between clients and servers. .../afsdfas
  */
 public class KVMessage {
 	private String msgType = null;
