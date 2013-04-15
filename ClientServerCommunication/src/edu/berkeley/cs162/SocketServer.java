@@ -32,6 +32,7 @@ package edu.berkeley.cs162;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 
 /** 
  * This is an generic class that should handle all TCP network connections 
@@ -43,24 +44,41 @@ public class SocketServer {
 	int port;
 	NetworkHandler handler;
 	ServerSocket server;
-	
+	/** Indicates whether or not the server is to stop running */
+	protected boolean stopFlag;
+
 	public SocketServer(String hostname, int port) {
 		this.hostname = hostname;
 		this.port = port;
+		stopFlag = false;
 	}
-	
+
 	public void connect() throws IOException {
-	      // TODO: implement me
+		// TODO: implement me
+		try {
+			server = new ServerSocket(8080);
+		} catch (IOException e) {
+			throw e;
+		}
 	}
-	
+
 	/**
 	 * Accept requests and service them asynchronously. 
 	 * @throws IOException if there is a network error (for instance if the socket is inadvertently closed) 
 	 */
 	public void run() throws IOException {
-	      // TODO: implement me
+		// TODO: implement me
+		while (!stopFlag) {
+			try {
+				Socket sock = server.accept();
+				handler.handle(sock);
+			} catch (IOException e) {
+				throw e;
+			}
+		}
+		finalize();
 	}
-	
+
 	/** 
 	 * Add the network handler for the current socket server
 	 * @param handler is logic for servicing a network connection
@@ -73,14 +91,21 @@ public class SocketServer {
 	 * Stop the ServerSocket
 	 */
 	public void stop() {
-	      // TODO: implement me
+		// TODO: implement me
+		stopFlag = true;
 	}
-	
+
 	private void closeSocket() {
-	     // TODO: implement me
+		// TODO: implement me
+		try {
+			server.close();
+		} catch (IOException e) {
+			e.printStackTrace();		//???????????????
+		}
 	}
-	
+
 	protected void finalize(){
 		closeSocket();
 	}
+
 }
