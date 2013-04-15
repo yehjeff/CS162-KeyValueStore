@@ -34,8 +34,15 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.net.Socket;
 import javax.xml.parsers.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -145,6 +152,7 @@ public class KVMessage {
 	    	 Node valueNode =  KVElement.getElementsByTagName("Value").item(0);
 	    	 Node messageNode =  KVElement.getElementsByTagName("Message").item(0);
 	    	 //make sure the found element node is not null (i.e. the KVMessage didn't have that tag) before setting it
+	    	 //self-note: NodeList.item(x) returns null if x >= NodeList.getLength()
 	    	 if (keyNode != null) {
 	    		 this.key = keyNode.getTextContent();
 	    	 }
@@ -180,8 +188,100 @@ public class KVMessage {
 	 * @throws KVException if not enough data is available to generate a valid KV XML message
 	 */
 	public String toXML() throws KVException {
-        return null;
-	      // TODO: implement me, use a parser to create the xml! (makes it safe from injections)
+		try {
+			//we want to add key/value/message depending on the msgType
+			boolean includeKey = false;
+			boolean includeVal = false;
+			boolean includeMsg = false;
+			
+			//confirm that msgType is not null
+			if (this.msgType == null){
+				KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: No Message Type");
+				throw new KVException(exceptMsg);
+			}
+			//confirm for different msgTypes
+			if (this.msgType == "getreq") {
+				includeKey = true;
+			} else if (this.msgType == "putreq") {
+				includeKey = true;
+				includeVal = true;
+			} else if (this.msgType == "delreq") {
+				includeKey = true;
+			} else if (this.msgType == "resp") {
+				//we control this, so if not null return it!
+				if (this.key != null) {
+					includeKey = true;
+				}
+				if (this.value != null) {
+					includeVal = true;
+				}
+				if (this.message != null) {
+					includeMsg = true;
+				}
+		    } else {
+		    	//unknown or incorrectly formatted msgType
+		    	KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Message format incorrect");
+		    	throw new KVException(exceptMsg);
+		    }
+			
+			//Now that we know what we want in the XML, we can construct it
+			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			Document doc = builder.newDocument();
+			//make top level KVMessage tag
+			Element rootKVMessage = doc.createElement("KVMessage");
+			doc.appendChild(rootKVMessage);
+			//add the attribute field 'type' to KVMessage
+			rootKVMessage.setAttribute("type", this.msgType);
+			
+			//use the booleans above to append the necessary information
+			if (includeKey == true) {
+				if ((this.key == null) || (this.key.length() == 0)) {
+					KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Key is null or zero-length");
+			    	throw new KVException(exceptMsg);
+				}
+				Element keyElem = doc.createElement("Key");
+				keyElem.appendChild(doc.createTextNode(this.key));
+				rootKVMessage.appendChild(keyElem);
+			}
+			if (includeVal == true) {
+				if ((this.value == null) || (this.value.length() == 0)) {
+					KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Value is null or zero-length");
+			    	throw new KVException(exceptMsg);
+				}
+				Element valElem = doc.createElement("Value");
+				valElem.appendChild(doc.createTextNode(this.value));
+				rootKVMessage.appendChild(valElem);
+			}
+			if (includeMsg == true) {
+				if ((this.message == null) || (this.message.length() == 0)) {
+					KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Message is null or zero-length");
+			    	throw new KVException(exceptMsg);
+				}
+				Element msgElem = doc.createElement("Message");
+				msgElem.appendChild(doc.createTextNode(this.message));
+				rootKVMessage.appendChild(msgElem);
+			}
+			
+			//use StringWriter and Transformer to convert the created XML document to string format
+			StringWriter writer = new StringWriter();
+			Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+			transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+			transformer.transform(new DOMSource(doc), new StreamResult(writer));
+			return writer.toString();
+		} catch (ParserConfigurationException e) {
+			//document builder cannot be created with requested configuration
+	    	KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Document builder cannot be created with requested configuration");
+	    	throw new KVException(exceptMsg);
+		} catch (TransformerException e) {
+			//transformer error
+			KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Transformer could not be created or transform interrupted");
+	    	throw new KVException(exceptMsg);
+		}
+ 
 	}
 	
 	public void sendMessage(Socket sock) throws KVException {
