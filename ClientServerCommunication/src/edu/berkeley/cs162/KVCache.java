@@ -31,10 +31,10 @@
 package edu.berkeley.cs162;
 
 import java.io.StringWriter;
-import java.util.Enumeration;
 import java.util.LinkedList;
 
 import java.util.concurrent.locks.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -58,7 +58,7 @@ public class KVCache implements KeyValueInterface {
 	private int maxElemsPerSet = 10;
 	private Entry sets[][];
 	LinkedList<Entry> set2CQueues[];
-	Lock setLocks[];
+	WriteLock setWriteLocks[];
 	/**
 	 * Creates a new LRU cache.
 	 * @param cacheSize	the maximum number of entries that will be kept in this cache.
@@ -68,11 +68,11 @@ public class KVCache implements KeyValueInterface {
 		this.maxElemsPerSet = maxElemsPerSet;     
 		sets = new Entry[numSets][maxElemsPerSet];
 		set2CQueues = (LinkedList<Entry>[]) new LinkedList<?>[numSets];	
-		setLocks = new Lock[numSets];
+		setWriteLocks = new WriteLock[numSets];
 		for (int i = 0; i < numSets; i++){
 			sets[i] = new Entry[maxElemsPerSet];
 			set2CQueues[i] = new LinkedList<Entry>();
-			setLocks[i] = new ReentrantLock();
+			setWriteLocks[i] = (new ReentrantReadWriteLock()).writeLock();
 			for (int j = 0; j < maxElemsPerSet; j++){
 				sets[i][j] = new Entry();
 			}
@@ -189,10 +189,10 @@ public class KVCache implements KeyValueInterface {
 	 * @param key
 	 * @return	the write lock of the set that contains key.
 	 */
-	public Lock getWriteLock(String key) {
+	public WriteLock getWriteLock(String key) {
 	    // TODO: Implement Me!
 		int setId = this.getSetId(key);
-		return this.setLocks[setId];
+		return this.setWriteLocks[setId];
 	}
 	
 	/**
