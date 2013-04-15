@@ -60,6 +60,18 @@ public class KVServer implements KeyValueInterface {
 		AutoGrader.agKVServerPutStarted(key, value);
 
 		// TODO: implement me
+		
+		try {
+			checkKey(key);
+			checkValue(value);
+		} catch (KVException e) {
+			throw e;
+		}
+		
+		dataCache.getWriteLock(key).lock();
+		dataCache.put(key,value);
+		dataStore.put(key,value);
+		dataCache.getWriteLock(key).unlock();
 
 		// Must be called before return or abnormal exit
 		AutoGrader.agKVServerPutFinished(key, value);
@@ -70,10 +82,24 @@ public class KVServer implements KeyValueInterface {
 		AutoGrader.agKVServerGetStarted(key);
 
 		// TODO: implement me
+		
+		try {
+			checkKey(key);
+		} catch (KVException e) {
+			throw e;
+		}
+		
+		dataCache.getWriteLock(key).lock();
+		String valueToReturn = dataCache.get(key);
+		if (valueToReturn == null) {
+			valueToReturn = dataStore.get(key);
+		}
+		dataCache.getWriteLock(key).unlock();
 
 		// Must be called before return or abnormal exit
 		AutoGrader.agKVServerGetFinished(key);
-		return null;
+		//return null;
+		return valueToReturn;
 	}
 	
 	public void del (String key) throws KVException {
@@ -81,8 +107,61 @@ public class KVServer implements KeyValueInterface {
 		AutoGrader.agKVServerDelStarted(key);
 
 		// TODO: implement me
+		
+		try {
+			checkKey(key);
+		} catch (KVException e) {
+			throw e;
+		}
+		
+		dataCache.getWriteLock(key).lock();
+		dataCache.del(key);
+		dataStore.del(key);
+		dataCache.getWriteLock(key).unlock();
 
 		// Must be called before return or abnormal exit
 		AutoGrader.agKVServerDelFinished(key);
+	}
+
+	/**
+	 * Checks the value of the given key and determines if it is valid 
+	 * (not null, non-zero length, and not oversized). 
+	 * If it is not valid, then the appropriate KVException is thrown.
+	 */
+	public void checkKey(String key) throws KVException {
+	    KVMessage exceptMsg = new KVMessage("resp");
+	    if (key == null) {
+	        exceptMsg.setMessage("Unknown Error: Null Key");
+	        throw new KVException(exceptMsg);
+	    }
+	    if (key.length() > MAX_KEY_SIZE) {
+	        exceptMsg.setMessage("Oversized key");
+	        throw new KVException(exceptMsg);
+	    }
+	    if (key.length() < 1) {
+	        exceptMsg.setMessage("Unknown Error: Zero Size Key");
+	        throw new KVException(exceptMsg);
+	    }
+	}
+	
+	/**
+	 * Checks the size of the given value and determines if it is valid
+	 * (not null, non-zero length, and not oversized).
+	 * If it is not valid, then the appropriate KVException is thrown.
+	 */
+	public void checkValue(String value) throws KVException {
+	    KVMessage exceptMsg = new KVMessage("resp");
+	    if (value == null) {
+	        exceptMsg.setMessage("Unknown Error: Null Value");
+	        throw new KVException(exceptMsg);
+	    }
+	    if (value.length() > MAX_VAL_SIZE) {
+	        exceptMsg.setMessage("Oversized value");
+	        throw new KVException(exceptMsg);
+	    }
+	    if (value.length() < 1) {
+	        exceptMsg.setMessage("Unknown Error: Zero Size Value");
+	        throw new KVException(exceptMsg);
+	    }
 	}
 }
