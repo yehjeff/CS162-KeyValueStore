@@ -30,9 +30,23 @@
  */
 package edu.berkeley.cs162;
 
+import java.io.StringWriter;
+import java.util.Enumeration;
 import java.util.LinkedList;
 
 import java.util.concurrent.locks.*;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 
 /**
@@ -68,6 +82,7 @@ public class KVCache implements KeyValueInterface {
 		// TODO: Implement Me!
 	}
 
+	
 	/**
 	 * Retrieves an entry from the cache.
 	 * Assumes the corresponding set has already been locked for writing.
@@ -193,6 +208,61 @@ public class KVCache implements KeyValueInterface {
 	
     public String toXML() {
         // TODO: Implement Me!
+    	try {
+			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			
+			Document doc = builder.newDocument();
+			Element KVCacheElement = doc.createElement("KVCache");
+			doc.appendChild(KVCacheElement);
+			for (int i = 0; i < this.numSets; i++){
+				Element setElement = doc.createElement("Set");
+				setElement.setAttribute("Id", "" + i);
+				KVCacheElement.appendChild(setElement);
+				for (int j = 0; j < this.maxElemsPerSet; j++){
+					Entry entry = this.sets[i][j];
+
+					boolean isValid = entry.isValid();
+					boolean isReferenced = entry.getReferenceBit();
+					
+					
+					Element cacheEntryElement = doc.createElement("CacheEntry");
+					cacheEntryElement.setAttribute("isReferenced", ""+isReferenced);
+					cacheEntryElement.setAttribute("isValid", ""+isValid);
+					
+					String key = entry.getKey();
+					Element keyElement = doc.createElement("Key");
+					keyElement.appendChild(doc.createTextNode(key));
+					cacheEntryElement.appendChild(keyElement);
+					
+					String value = entry.getValue();
+					Element valueElement = doc.createElement("Value");
+					valueElement.appendChild(doc.createTextNode(value));
+					cacheEntryElement.appendChild(valueElement);
+					
+					setElement.appendChild(cacheEntryElement);
+					
+					
+				}
+				
+			}
+			
+			StringWriter writer = new StringWriter();
+			Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+			transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+			transformer.transform(new DOMSource(doc), new StreamResult(writer));
+			return writer.toString();
+			
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+    	
         return null;
     }
     

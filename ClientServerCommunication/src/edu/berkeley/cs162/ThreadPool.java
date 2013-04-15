@@ -30,11 +30,21 @@
  */
 package edu.berkeley.cs162;
 
+
+import java.util.*;
+import java.util.concurrent.locks.*;
+
 public class ThreadPool {
 	/**
 	 * Set of threads in the threadpool
+	 * More instance variables
 	 */
 	protected Thread threads[] = null;
+	
+	LinkedList<Runnable> jobs;
+	Lock jobsLock;
+	Condition jobsCondition;
+	Boolean shutdown;
 
 	/**
 	 * Initialize the number of threads required in the threadpool. 
@@ -43,7 +53,15 @@ public class ThreadPool {
 	 */
 	public ThreadPool(int size)
 	{      
-	    // TODO: implement me
+		shutdown = false;
+		jobsLock = new ReentrantLock();
+		jobsCondition = jobsLock.newCondition();
+		jobs = new LinkedList<Runnable>();
+		threads = new Thread[size];
+		for (int i = 0; i < size; i++){
+			threads[i] = new WorkerThread(this);
+			threads[i].run();
+		}
 	}
 
 	/**
@@ -54,7 +72,10 @@ public class ThreadPool {
 	 */
 	public void addToQueue(Runnable r) throws InterruptedException
 	{
-	      // TODO: implement me
+		jobsLock.lock();
+		jobs.add(r);
+		jobsCondition.signal();
+		jobsLock.unlock();
 	}
 	
 	/** 
@@ -63,8 +84,17 @@ public class ThreadPool {
 	 * @throws InterruptedException 
 	 */
 	public synchronized Runnable getJob() throws InterruptedException {
-	      // TODO: implement me
-	    return null;
+		jobsLock.lock();
+		while (jobs.size() == 0) {
+			jobsCondition.await();
+		}
+		Runnable newJob = jobs.poll();
+		jobsLock.unlock();
+		return newJob;
+	}
+	
+	public Boolean getShutdownStatus() throws InterruptedException {
+		return this.shutdown;
 	}
 }
 
@@ -77,9 +107,12 @@ class WorkerThread extends Thread {
 	 * 
 	 * @param o the thread pool 
 	 */
+	ThreadPool threadPool;
+	
 	WorkerThread(ThreadPool o)
 	{
-	     // TODO: implement me
+		super();
+		this.threadPool = o;
 	}
 
 	/**
@@ -87,6 +120,14 @@ class WorkerThread extends Thread {
 	 */
 	public void run()
 	{
-	      // TODO: implement me
+		try {
+			while (this.threadPool.getShutdownStatus()) {
+				threadPool.getJob().run();
+			}
+			threadPool.getJob().run(); // runs final job
+		}
+		catch (InterruptedException e) {
+			//throw e              // not working for some reason...
+		}
 	}
 }
