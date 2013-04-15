@@ -30,6 +30,8 @@
  */
 package edu.berkeley.cs162;
 
+import java.util.concurrent.locks.*;
+
 /**
  * This class defines the slave key value servers. Each individual KVServer 
  * would be a fully functioning Key-Value server. For Project 3, you would 
@@ -41,6 +43,7 @@ package edu.berkeley.cs162;
 public class KVServer implements KeyValueInterface {
 	private KVStore dataStore = null;
 	private KVCache dataCache = null;
+	private Lock storeLock;
 	
 	private static final int MAX_KEY_SIZE = 256;
 	private static final int MAX_VAL_SIZE = 256 * 1024;
@@ -51,6 +54,7 @@ public class KVServer implements KeyValueInterface {
 	public KVServer(int numSets, int maxElemsPerSet) {
 		dataStore = new KVStore();
 		dataCache = new KVCache(numSets, maxElemsPerSet);
+		storeLock = new ReentrantLock();
 
 		AutoGrader.registerKVServer(dataStore, dataCache);
 	}
@@ -70,8 +74,11 @@ public class KVServer implements KeyValueInterface {
 		
 		dataCache.getWriteLock(key).lock();
 		dataCache.put(key,value);
-		dataStore.put(key,value);
 		dataCache.getWriteLock(key).unlock();
+		
+		storeLock.lock();
+		dataStore.put(key,value);
+		storeLock.unlock();
 
 		// Must be called before return or abnormal exit
 		AutoGrader.agKVServerPutFinished(key, value);
@@ -92,7 +99,11 @@ public class KVServer implements KeyValueInterface {
 		dataCache.getWriteLock(key).lock();
 		String valueToReturn = dataCache.get(key);
 		if (valueToReturn == null) {
+			storeLock.lock();
 			valueToReturn = dataStore.get(key);
+			storeLock.unlock();
+			
+			dataCache.put(key, valueToReturn);
 		}
 		dataCache.getWriteLock(key).unlock();
 
@@ -116,8 +127,11 @@ public class KVServer implements KeyValueInterface {
 		
 		dataCache.getWriteLock(key).lock();
 		dataCache.del(key);
-		dataStore.del(key);
 		dataCache.getWriteLock(key).unlock();
+		
+		storeLock.lock();
+		dataStore.del(key);
+		storeLock.lock();
 
 		// Must be called before return or abnormal exit
 		AutoGrader.agKVServerDelFinished(key);
