@@ -97,7 +97,7 @@ public class KVCache implements KeyValueInterface {
 		int setId = this.getSetId(key);
 		for (int i = 0; i < this.maxElemsPerSet; i++){
 			Entry entry = this.sets[setId][i];
-			if (entry.getKey().equals(key) && entry.isValid()){
+			if (entry.isValid() && entry.getKey().equals(key)){
 				entry.turnOnReferenceBit();
 				valueToReturn = entry.getValue();			
 			}
@@ -126,7 +126,7 @@ public class KVCache implements KeyValueInterface {
 		
 		for (int i = 0; i < this.maxElemsPerSet; i++){
 			Entry entry = this.sets[setId][i];
-			if (entry.getKey().equals(key) && entry.isValid()){
+			if (entry.isValid() && entry.getKey().equals(key)){
 				entry.setValue(value);
 				entry.turnOffReferenceBit();
 				AutoGrader.agCachePutFinished(key, value);
@@ -243,7 +243,6 @@ public class KVCache implements KeyValueInterface {
 				}
 				
 			}
-			
 			StringWriter writer = new StringWriter();
 			Transformer transformer = TransformerFactory.newInstance().newTransformer();
 			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
@@ -272,6 +271,8 @@ public class KVCache implements KeyValueInterface {
     	
     	public Entry(){
     		this.valid = false;
+    		this.key = "";
+    		this.value = "";
     	}
     	
     	public String getKey(){
