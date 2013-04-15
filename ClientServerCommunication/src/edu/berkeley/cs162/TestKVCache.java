@@ -5,8 +5,18 @@ import junit.framework.TestCase;
 public class TestKVCache extends TestCase {
 
 	
-	public void testConstructor() {
-		//Just check that all entries are invalid after instantiation
+	public void testConstructor() { 
+		//Just check that all entries are invalid after instantiation //HOW TO TEST IF EVERYTHING IS PRIVATE????
+		int numSets = 4;
+		int maxElemsPerSet = 4;
+		KVCache cache = new KVCache(numSets,maxElemsPerSet);
+		for (int i = 0; i < numSets; i ++){
+			for (int j = 0; j < maxElemsPerSet; j++){
+				
+				assertTrue(true);
+			}
+		}
+
 	}
 	
 	//SUPER TEST FUNCTION
@@ -26,12 +36,14 @@ public class TestKVCache extends TestCase {
 	
 	public void testToXml() {
 		//Check the return value of toXML() with an empty cache
-		KVStore storeEmpty = new KVStore();
+		KVCache cacheEmpty = new KVCache(4,4);
 				
 		//Check the return value of toXML() with a non-empty cache
-		KVStore storeNonEmpty = new KVStore();
+		KVCache cacheNonEmpty = new KVCache(4,4);
 		
 		//Check the return value of toXML() with a full cache
+		KVCache cacheFull = new KVCache(4,4);
+
 	}
 	
 }

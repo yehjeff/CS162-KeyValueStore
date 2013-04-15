@@ -4,12 +4,24 @@ import junit.framework.TestCase;
 
 public class TestKVStore extends TestCase {
 	
-	public void testToXML() {
+	public void testToXML() { //HOW DO YOU ASSERTEQUAL STUFF WITH SUCH BIG STRINGS LOL
 		//Check the return value of toXML() with an empty store
 		KVStore storeEmpty = new KVStore();
+		System.out.println(storeEmpty.toXML());
 		
 		//Check the return value of toXML() with a non-empty store
 		KVStore storeNonEmpty = new KVStore();
+		try{
+			storeNonEmpty.put("key1","value1");
+			storeNonEmpty.put("key2","value2");
+			storeNonEmpty.put("key3","value3");
+			storeNonEmpty.put("key4","value4");
+
+		} catch (KVException kve) {
+			fail();
+		}
+		System.out.println(storeNonEmpty.toXML());
+
 
 	}
 	
