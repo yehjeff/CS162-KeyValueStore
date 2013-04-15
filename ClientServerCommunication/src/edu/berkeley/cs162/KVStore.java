@@ -129,15 +129,18 @@ public class KVStore implements KeyValueInterface {
 			doc.appendChild(KVStoreElement);
 			Enumeration<String> keysEnumerator = this.store.keys();
 			for (int i = 0; i < store.size(); i++){
+				Element KVPairElement = doc.createElement("KVPair");
+				KVStoreElement.appendChild(KVPairElement);
+				
 				String key = keysEnumerator.nextElement();
 				Element keyElement = doc.createElement("Key");
 				keyElement.appendChild(doc.createTextNode(key));
-				KVStoreElement.appendChild(keyElement);
+				KVPairElement.appendChild(keyElement);
 				
 				String value = store.get(key);
 				Element valueElement = doc.createElement("Value");
 				valueElement.appendChild(doc.createTextNode(value));
-				KVStoreElement.appendChild(valueElement);
+				KVPairElement.appendChild(valueElement);
 				
 			}
 			
@@ -154,9 +157,9 @@ public class KVStore implements KeyValueInterface {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return null;
 		}
 
-        return null;
     }        
 
     public void dumpToFile(String fileName) {
