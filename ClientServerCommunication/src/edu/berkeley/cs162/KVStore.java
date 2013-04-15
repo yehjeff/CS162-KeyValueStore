@@ -30,8 +30,24 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package edu.berkeley.cs162;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.StringWriter;
 import java.util.Dictionary;
+import java.util.Enumeration;
 import java.util.Hashtable;
+import javax.xml.parsers.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 
 /**
@@ -104,11 +120,54 @@ public class KVStore implements KeyValueInterface {
 	
     public String toXML() {
         // TODO: implement me
+    	
+		try {
+			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			
+			Document doc = builder.newDocument();
+			Element KVStoreElement = doc.createElement("KVStore");
+			doc.appendChild(KVStoreElement);
+			Enumeration<String> keysEnumerator = this.store.keys();
+			for (int i = 0; i < store.size(); i++){
+				String key = keysEnumerator.nextElement();
+				Element keyElement = doc.createElement("Key");
+				keyElement.appendChild(doc.createTextNode(key));
+				KVStoreElement.appendChild(keyElement);
+				
+				String value = store.get(key);
+				Element valueElement = doc.createElement("Value");
+				valueElement.appendChild(doc.createTextNode(value));
+				KVStoreElement.appendChild(valueElement);
+				
+			}
+			
+			StringWriter writer = new StringWriter();
+			Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+			transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+			transformer.transform(new DOMSource(doc), new StreamResult(writer));
+			return writer.toString();
+			
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
         return null;
     }        
 
     public void dumpToFile(String fileName) {
         // TODO: implement me
+    	try{
+    		BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
+    		writer.write(this.toXML());
+    		writer.close();
+    	} catch (Exception e){
+    		e.printStackTrace();
+    	}
     }
 
     /**
@@ -118,5 +177,24 @@ public class KVStore implements KeyValueInterface {
      */
     public void restoreFromFile(String fileName) {
         // TODO: implement me
+       	try{
+    		File xmlFile = new File(fileName);
+    		DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+    		Document doc = builder.parse(xmlFile);
+    		
+    		this.resetStore();
+    		
+    		NodeList KVPairList = doc.getElementsByTagName("KVPair").item(0).getChildNodes();
+    		
+    		for (int i = 0; i < KVPairList.getLength(); i++){
+    			Node KVPair = KVPairList.item(i);
+    			Element KVPairElement = (Element) KVPair;
+    			String key = KVPairElement.getElementsByTagName("Key").item(0).getTextContent();
+    			String value = KVPairElement.getElementsByTagName("Value").item(0).getTextContent();
+    			this.store.put(key, value);
+    		}
+    	} catch(Exception e){
+    		e.printStackTrace();
+    	}
     }
 }
