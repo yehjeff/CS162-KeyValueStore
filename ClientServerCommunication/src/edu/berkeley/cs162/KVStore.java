@@ -190,8 +190,7 @@ public class KVStore implements KeyValueInterface {
     		NodeList KVPairList = doc.getElementsByTagName("KVPair").item(0).getChildNodes();
     		
     		for (int i = 0; i < KVPairList.getLength(); i++){
-    			Node KVPair = KVPairList.item(i);
-    			Element KVPairElement = (Element) KVPair;
+    			Element KVPairElement = (Element) KVPairList.item(i);
     			String key = KVPairElement.getElementsByTagName("Key").item(0).getTextContent();
     			String value = KVPairElement.getElementsByTagName("Value").item(0).getTextContent();
     			this.store.put(key, value);
