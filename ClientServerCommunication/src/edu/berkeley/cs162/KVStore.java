@@ -188,7 +188,7 @@ public class KVStore implements KeyValueInterface {
     		
     		this.resetStore();
     		
-    		NodeList KVPairList = doc.getElementsByTagName("KVPair").item(0).getChildNodes();
+    		NodeList KVPairList = doc.getElementsByTagName("KVPair");
     		
     		for (int i = 0; i < KVPairList.getLength(); i++){
     			Element KVPairElement = (Element) KVPairList.item(i);
@@ -197,7 +197,7 @@ public class KVStore implements KeyValueInterface {
     			this.store.put(key, value);
     		}
     	} catch(Exception e){
-    		e.printStackTrace();
+    		System.out.println("KVStore.restoreFromFile(): Unable to read xml file");
     	}
     }
 }

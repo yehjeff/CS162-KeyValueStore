@@ -1,5 +1,15 @@
 package edu.berkeley.cs162;
 
+import java.io.StringReader;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+
 import junit.framework.TestCase;
 
 public class TestKVCache extends TestCase {
@@ -23,7 +33,6 @@ public class TestKVCache extends TestCase {
 		assertTrue(getReturnValue == null);
 		getReturnValue = cache.get("key3");
 		assertTrue(getReturnValue == null);
-		System.out.println(cache.toXML());
 		
 		//using get to ensure put was successful
 		cache.put("key1", "value1");
@@ -117,16 +126,85 @@ public class TestKVCache extends TestCase {
 		// idk lol
 	}
 	
-	public void testToXml() {
-
-		//Check the return value of toXML() with an empty cache, use parser for comparison
-		KVCache cacheEmpty = new KVCache(4,4);
-				
-		//Check the return value of toXML() with a non-empty cache
-		KVCache cacheNonEmpty = new KVCache(4,4);
+	public void testToXml() throws Exception {
 		
-		//Check the return value of toXML() with a full cache
-		KVCache cacheFull = new KVCache(4,4);
+		//Check the return value of toXML() with an empty cache, use parser for comparison
+		// can also check key and values (all should be empty)
+		int numSets = 4;
+		int maxElemsPerSet = 4;
+		KVCache emptyCache = new KVCache(numSets, maxElemsPerSet);
+		String XMLString = emptyCache.toXML();
+		
+		DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		Document doc = builder.parse(new InputSource(new StringReader(XMLString)));
+
+		NodeList setList = doc.getElementsByTagName("Set");
+		assertTrue(setList.getLength() == numSets);
+		NodeList cacheEntryList = doc.getElementsByTagName("CacheEntry");
+		assertTrue(cacheEntryList.getLength() == numSets*maxElemsPerSet);
+		for (int cacheEntryIndex = 0; cacheEntryIndex < cacheEntryList.getLength(); cacheEntryIndex++){
+			Element cacheEntryElem = (Element) cacheEntryList.item(cacheEntryIndex);
+			String isReferenced = cacheEntryElem.getAttribute("isReferenced");
+			String isValid = cacheEntryElem.getAttribute("isValid");
+			assertTrue(isReferenced.equals("false"));
+			assertTrue(isValid.equals("false"));
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+
+		
+		//Check the return value of toXML() with a non-empty cache
+		numSets = 4;
+		maxElemsPerSet = 4;
+		KVCache nonemptyCache = new KVCache(numSets, maxElemsPerSet);
+		nonemptyCache.put("key1", "value1");
+		XMLString = nonemptyCache.toXML();
+		
+		builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		doc = builder.parse(new InputSource(new StringReader(XMLString)));
+
+		setList = doc.getElementsByTagName("Set");
+		assertTrue(setList.getLength() == numSets);
+		cacheEntryList = doc.getElementsByTagName("CacheEntry");
+		assertTrue(cacheEntryList.getLength() == numSets*maxElemsPerSet);
+		for (int cacheEntryIndex = 0; cacheEntryIndex < cacheEntryList.getLength(); cacheEntryIndex++){
+			Element cacheEntryElem = (Element) cacheEntryList.item(cacheEntryIndex);
+			String isValid = cacheEntryElem.getAttribute("isValid");
+			if (isValid.equals("true")){
+				assertTrue(cacheEntryElem.getElementsByTagName("Key").item(0).getTextContent().equals("key1"));
+				assertTrue(cacheEntryElem.getElementsByTagName("Value").item(0).getTextContent().equals("value1"));
+			}
+		}
+		//Check the return value of toXML() with a full cache, all isValid attributes should be true
+		numSets = 1;
+		maxElemsPerSet = 4;
+		KVCache fullCache = new KVCache(numSets,maxElemsPerSet);
+		fullCache.put("key1", "value1");
+		fullCache.put("key2", "value2");
+		fullCache.put("key3", "value3");
+		fullCache.put("key4", "value4");
+		XMLString = fullCache.toXML();
+		System.out.println(fullCache.toXML());
+
+		builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		doc = builder.parse(new InputSource(new StringReader(XMLString)));
+
+		setList = doc.getElementsByTagName("Set");
+		assertTrue(setList.getLength() == numSets);
+		cacheEntryList = doc.getElementsByTagName("CacheEntry");
+		assertTrue(cacheEntryList.getLength() == numSets*maxElemsPerSet);
+		for (int cacheEntryIndex = 0; cacheEntryIndex < cacheEntryList.getLength(); cacheEntryIndex++){
+			Element cacheEntryElem = (Element) cacheEntryList.item(cacheEntryIndex);
+			String isValid = cacheEntryElem.getAttribute("isValid");
+			assertTrue(isValid.equals("true"));
+
+		}
 
 	}
 	
