@@ -16,6 +16,7 @@ public class TestKVServer extends TestCase {
 		KVServer server = new KVServer(10, 10);
 		try {
 			server.checkKey(null);
+			assertTrue(false);		//never gets here
 		} catch (KVException e) {
 			assertEquals("Unknown Error: Null Key", e.getMsg().getMessage());
 		}
@@ -29,6 +30,7 @@ public class TestKVServer extends TestCase {
 		}
 		try {
 			server.checkKey(overSize);
+			assertTrue(false);		//never gets here
 		} catch (KVException e) {
 			assertEquals("Oversized key", e.getMsg().getMessage());
 		}
@@ -38,6 +40,7 @@ public class TestKVServer extends TestCase {
 		KVServer server = new KVServer(10, 10);
 		try {
 			server.checkKey("");
+			assertTrue(false);		//never gets here
 		} catch (KVException e) {
 			assertEquals("Unknown Error: Zero Size Key", e.getMsg().getMessage());
 		}
@@ -50,6 +53,7 @@ public class TestKVServer extends TestCase {
 		KVServer server = new KVServer(10, 10);
 		try {
 			server.checkValue(null);
+			assertTrue(false);		//never gets here
 		} catch (KVException e) {
 			assertEquals("Unknown Error: Null Value", e.getMsg().getMessage());
 		}
@@ -63,6 +67,7 @@ public class TestKVServer extends TestCase {
 		}
 		try {
 			server.checkValue(overSize);
+			assertTrue(false);		//never gets here
 		} catch (KVException e) {
 			assertEquals("Oversized value", e.getMsg().getMessage());
 		}
@@ -72,6 +77,7 @@ public class TestKVServer extends TestCase {
 		KVServer server = new KVServer(10, 10);
 		try {
 			server.checkValue("");
+			assertTrue(false);		//never gets here
 		} catch (KVException e) {
 			assertEquals("Unknown Error: Zero Size Value", e.getMsg().getMessage());
 		}
@@ -86,6 +92,7 @@ public class TestKVServer extends TestCase {
 			server.put("1", "hello");
 			assertEquals("hello", server.get("1"));
 		} catch (KVException e) {
+			assertTrue(false);		//never gets here
 		}
 	}
 	
@@ -96,6 +103,7 @@ public class TestKVServer extends TestCase {
 			server.put("1", "world");
 			assertEquals("world", server.get("1"));
 		} catch (KVException e) {
+			assertTrue(false);		//never gets here
 		}
 	}
 	
@@ -103,6 +111,7 @@ public class TestKVServer extends TestCase {
 		KVServer server = new KVServer(10, 10);
 		try {
 			server.put(null, "hello");
+			assertTrue(false);		//never gets here
 		} catch (KVException e) {
 			assertEquals("Unknown Error: Null Key", e.getMsg().getMessage());
 		}
