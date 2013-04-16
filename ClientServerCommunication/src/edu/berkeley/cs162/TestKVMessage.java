@@ -213,7 +213,54 @@ public class TestKVMessage extends TestCase {
 		}
 	}
 	
+	//test for invalid XML formats that do not throw an error
+	public void testInputConstructorInvalidNoError() {
+		try {
+			ByteArrayInputStream testInputStream1 = new ByteArrayInputStream(XMLwrongMsgType.getBytes("UTF-8"));
+			KVMessage testMsg1 = new KVMessage(testInputStream1);
+			assertNotNull("should have some (incorrect) msgType", testMsg1.getMsgType());
+			assertNull("should have null key", testMsg1.getKey());
+			assertNull("should have null val", testMsg1.getValue());
+			assertNull("should have null msg", testMsg1.getMessage());
+			
+			ByteArrayInputStream testInputStream2 = new ByteArrayInputStream(XMLextraField.getBytes("UTF-8"));
+			KVMessage testMsg2 = new KVMessage(testInputStream2);
+			assertEquals("should have correct msgType", "resp", testMsg2.getMsgType());
+			assertNull("should have null key", testMsg2.getKey());
+			assertNull("should have null val", testMsg2.getValue());
+			assertNull("should have null msg", testMsg2.getMessage());
+			
+		} catch (Exception e) {
+			fail("something went wrong with the input stream constructor given non-crashing invalid inputs!");
+		}
+	}
+	
+	//test for invalid XML formats that do throw an error
+	public void testInputConstructorInvalidWillError() {
+		try {
+			ByteArrayInputStream testInputStream1 = new ByteArrayInputStream(XMLgibberish.getBytes("UTF-8"));
+			KVMessage testMsg1 = new KVMessage(testInputStream1);
+			fail("the gibberish somehow parsed into a KVmesage");
+		} catch (KVException e) {
+			assertEquals("should have expected error message", "XML Error: Received unparseable message", e.getMsg().getMessage());
+		} catch (Exception e) {
+			//do nothing
+		}
+	}
+	
+	//to test toXML, we need to create some KVMessages
+	
+	//guh this sucks, i can see that it works... i don't want to parse the result... and so many of them...
 	public void testToXMLValid() {
-		
+		try {
+			KVMessage getKV = new KVMessage("resp");
+			getKV.setKey("KEY");
+			getKV.setValue("VAL");
+			//getKV.setMessage("MSG");
+			System.out.println(getKV.toXML());
+		} catch (KVException e) {
+			System.out.println(e.getMsg().getMessage());
+			fail("an exception was thrown");
+		}
 	}
 }

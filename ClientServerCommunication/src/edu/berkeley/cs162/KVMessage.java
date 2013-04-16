@@ -223,7 +223,7 @@ public class KVMessage {
 				//TODO: if all 3 are true, complain?
 				// or if it doesnt satisfy only msg or only key/value then complain
 				if (!(((includeKey == true) && (includeVal == true) && (includeMsg == false)) || ((includeKey == false) && (includeVal == false) && (includeMsg == true)))) {
-					KVMessage exceptMsg = new KVMessage("resp", "Unknwon Error: Incorrect fields for 'resp' msgType");
+					KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Incorrect fields for 'resp' msgType");
 					throw new KVException(exceptMsg);
 				}
 		    } else {
