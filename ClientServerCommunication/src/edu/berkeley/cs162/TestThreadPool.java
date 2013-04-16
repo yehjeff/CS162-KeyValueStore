@@ -13,8 +13,6 @@ public class TestThreadPool extends TestCase {
 	@Test
 	public void testThreadPool() {
 		// Create a new threadpool, after creation threads automatically start running, so
-		// can't run anything after threadPool starts up, the infinite loop of thread.run() causes
-		// issues..... T_T
 
 		ThreadPool tp = new ThreadPool(1);
 

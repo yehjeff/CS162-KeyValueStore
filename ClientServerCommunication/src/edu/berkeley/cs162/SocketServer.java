@@ -99,6 +99,7 @@ public class SocketServer {
 		// TODO: implement me
 		try {
 			server.close();
+			handler.stop();  // dlajflkajewfweoifjo 
 		} catch (IOException e) {
 			e.printStackTrace();		//???????????????
 		}

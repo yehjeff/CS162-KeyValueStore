@@ -36,4 +36,5 @@ import java.net.Socket;
 
 public interface NetworkHandler {
 	public void handle(Socket client) throws IOException;
+	public void stop();	// added to shut off threadpool
 }
