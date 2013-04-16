@@ -9,12 +9,11 @@ import junit.framework.TestCase;
 
 public class TestKVServer extends TestCase {
 	
-	KVServer server = new KVServer(10, 10);
-	
 	//
 	//checkKey() tests
 	//
 	public void testNullKey() {
+		KVServer server = new KVServer(10, 10);
 		try {
 			server.checkKey(null);
 		} catch (KVException e) {
@@ -23,6 +22,7 @@ public class TestKVServer extends TestCase {
 	}
 	
 	public void testOversizedKey() throws KVException {
+		KVServer server = new KVServer(10, 10);
 		String overSize = null;
 		for (int i = 0; i < 256; i++) {
 			overSize += "k";
@@ -35,6 +35,7 @@ public class TestKVServer extends TestCase {
 	}
 
 	public void testZeroKey() throws KVException {
+		KVServer server = new KVServer(10, 10);
 		try {
 			server.checkKey("");
 		} catch (KVException e) {
@@ -46,6 +47,7 @@ public class TestKVServer extends TestCase {
 	//checkValue() tests
 	//
 	public void testNullValue() {
+		KVServer server = new KVServer(10, 10);
 		try {
 			server.checkValue(null);
 		} catch (KVException e) {
@@ -54,6 +56,7 @@ public class TestKVServer extends TestCase {
 	}
 	
 	public void testOversizedValue() throws KVException {
+		KVServer server = new KVServer(10, 10);
 		String overSize = null;
 		for (int i = 0; i < 1024; i++) {
 			overSize += "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk";
@@ -66,6 +69,7 @@ public class TestKVServer extends TestCase {
 	}
 
 	public void testZeroValue() throws KVException {
+		KVServer server = new KVServer(10, 10);
 		try {
 			server.checkValue("");
 		} catch (KVException e) {
@@ -76,79 +80,122 @@ public class TestKVServer extends TestCase {
 	//
 	//put() tests
 	//
-	@Test
 	public void testPut1() {
-		String a = "";
+		KVServer server = new KVServer(10, 10);
 		try {
-			System.out.println("HI");
 			server.put("1", "hello");
-			System.out.println("BYE");
-			a = server.get("1");
-			assertEquals("hello", a);
+			assertEquals("hello", server.get("1"));
 		} catch (KVException e) {
 		}
 	}
 	
-	@Test
-	public void putTest2() throws KVException {
-		server.put("1", "hello");
-		server.put("1", "world");
-		assertEquals("world", server.get("1"));
-		server.del("1");
+	public void testPut2() throws KVException {
+		KVServer server = new KVServer(10, 10);
+		try {
+			server.put("1", "hello");
+			server.put("1", "world");
+			assertEquals("world", server.get("1"));
+		} catch (KVException e) {
+		}
 	}
 	
-	@Test (expected = KVException.class)
-	public void badPutTest1() throws KVException {
-		thrown.expectMessage(JUnitMatchers.containsString("Unknown Error: Null Key"));
-		server.put(null, "hello");
+	public void testBadPut1() {
+		KVServer server = new KVServer(10, 10);
+		try {
+			server.put(null, "hello");
+		} catch (KVException e) {
+			assertEquals("Unknown Error: Null Key", e.getMsg().getMessage());
+		}
 	}
 
-	@Test (expected = KVException.class)
-	public void badPutTest2() throws KVException {
-		thrown.expectMessage(JUnitMatchers.containsString("Unknown Error: Null Value"));
-		server.put("1", null);
+	public void testBadPut2() throws KVException {
+		KVServer server = new KVServer(10, 10);
+		try {
+			server.put("1", null);
+		} catch (KVException e) {
+			assertEquals("Unknown Error: Null Value", e.getMsg().getMessage());
+		}
 	}
 	
 	//
 	//get() tests
 	//
-	@Test
-	public void getTest1() throws KVException {
-		assertEquals(null, server.get("10"));
+
+	public void testGet() {
+		KVServer server = new KVServer(10, 10);
+		try {
+			server.put("2", "hi");
+			assertEquals("hi", server.get("2"));
+		} catch (KVException e) {
+		}
 	}
 	
-	@Test (expected = KVException.class)
-	public void badGetTest1() throws KVException {
-		thrown.expectMessage(JUnitMatchers.containsString("Unknown Error: Zero Size Key"));
-		server.get("");
+	public void testBadGet1() {
+		KVServer server = new KVServer(10, 10);
+		try {
+			server.get("10");
+			fail();
+		} catch (KVException e) {
+			assertEquals("Does not exist", e.getMsg().getMessage());
+		}
+	}
+	
+	public void testBadGet2() {
+		KVServer server = new KVServer(10, 10);
+		try {
+			server.get("");
+		} catch (KVException e) {
+			assertEquals("Unknown Error: Zero Size Key", e.getMsg().getMessage());
+		}
 	}
 
-	@Test (expected = KVException.class)
-	public void badGetTest2() throws KVException {
-		thrown.expectMessage(JUnitMatchers.containsString("Unknown Error: Null Key"));
-		server.get(null);
+	public void testBadGet3() {
+		KVServer server = new KVServer(10, 10);
+		try {
+			server.get(null);
+		} catch (KVException e) {
+			assertEquals("Unknown Error: Null Key", e.getMsg().getMessage());
+		}
 	}
 
 	//
 	//del() tests
 	//
-	@Test
-	public void delTest1() throws KVException {
-		server.put("1", "hello");
-		server.del("1");
-		assertEquals(null, server.get("1"));
-	}
-	
-	@Test (expected = KVException.class)
-	public void badDelTest1() throws KVException {
-		thrown.expectMessage(JUnitMatchers.containsString("Unknown Error: Null Key"));
-		server.del(null);
+	public void testDel() {
+		KVServer server = new KVServer(10, 10);
+		try {
+			server.put("1", "hello");
+			server.del("1");
+			assertEquals(null, server.get("1"));
+		} catch (KVException e) {
+		}
 	}
 
-	@Test (expected = KVException.class)
-	public void badDelTest2() throws KVException {
-		thrown.expectMessage(JUnitMatchers.containsString("Unknown Error: Zero Size Key"));
-		server.del("");
+	public void testBadDel1() {
+		KVServer server = new KVServer(10, 10);
+		try {
+			server.del("10");
+		} catch (KVException e) {
+			assertEquals("Does not exist", e.getMsg().getMessage());
+		}
+	}
+	
+	public void testBadDel2() {
+		KVServer server = new KVServer(10, 10);
+		try {
+			server.del(null);
+		} catch (KVException e) {
+			assertEquals("Unknown Error: Null Key", e.getMsg().getMessage());
+		}
+	}
+
+	public void testBadDel3() {
+		KVServer server = new KVServer(10, 10);
+		try {
+			server.del("");
+		} catch (KVException e) {
+			assertEquals("Unknown Error: Zero Size Key", e.getMsg().getMessage());
+		}
 	}
 
 }

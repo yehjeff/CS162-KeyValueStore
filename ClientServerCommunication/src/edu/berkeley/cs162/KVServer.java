@@ -98,6 +98,15 @@ public class KVServer implements KeyValueInterface {
 		}
 		
 		dataCache.getWriteLock(key).lock();
+		
+		//for throwing the correct error message
+		try {
+			dataStore.get(key);
+		} catch (KVException e) {
+		    KVMessage msg = new KVMessage("resp", "Does not exist");
+		    throw new KVException(msg);
+		}
+		
 		String valueToReturn = dataCache.get(key);
 		if (valueToReturn == null) {
 			
@@ -128,6 +137,14 @@ public class KVServer implements KeyValueInterface {
 		}
 		
 		dataCache.getWriteLock(key).lock();
+
+		//for throwing the correct error message
+		try {
+			dataStore.get(key);
+		} catch (KVException e) {
+		    KVMessage msg = new KVMessage("resp", "Does not exist");
+		    throw new KVException(msg);
+		}
 		
 		dataCache.del(key);
 		storeLock.lock();
