@@ -136,6 +136,8 @@ public class KVMessage {
      * b. "Network Error: Could not receive data" - if there is a network error causing an incomplete parsing of the message.
      * c. "Message format incorrect" - if there message does not conform to the required specifications. Examples include incorrect message type. 
      */
+	
+	//this one does no error checking, that is done later in toXML
 	public KVMessage(InputStream input) throws KVException {
 	     try {
 	    	 DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -220,6 +222,10 @@ public class KVMessage {
 				}
 				//TODO: if all 3 are true, complain?
 				// or if it doesnt satisfy only msg or only key/value then complain
+				if (!(((includeKey == true) && (includeVal == true) && (includeMsg == false)) || ((includeKey == false) && (includeVal == false) && (includeMsg == true)))) {
+					KVMessage exceptMsg = new KVMessage("resp", "Unknwon Error: Incorrect fields for 'resp' msgType");
+					throw new KVException(exceptMsg);
+				}
 		    } else {
 		    	//unknown or incorrectly formatted msgType
 		    	KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Message format incorrect");
