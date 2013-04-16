@@ -10,68 +10,83 @@ import junit.framework.TestCase;
 public class TestKVServer extends TestCase {
 	
 	KVServer server = new KVServer(10, 10);
-
-	@Rule
-	public ExpectedException thrown = ExpectedException.none();
 	
 	//
 	//checkKey() tests
 	//
-	@Test (expected = KVException.class)
-	public void nullKeyTest() throws KVException {
-		thrown.expectMessage(JUnitMatchers.containsString("Unknown Error: Null Key"));
-		server.checkKey(null);
+	public void testNullKey() {
+		try {
+			server.checkKey(null);
+		} catch (KVException e) {
+			assertEquals("Unknown Error: Null Key", e.getMsg().getMessage());
+		}
 	}
 	
-	@Test (expected = KVException.class)
-	public void oversizedKeyTest() throws KVException {
-		thrown.expectMessage(JUnitMatchers.containsString("Oversized key"));
+	public void testOversizedKey() throws KVException {
 		String overSize = null;
 		for (int i = 0; i < 256; i++) {
 			overSize += "k";
 		}
-		server.checkKey(overSize);
+		try {
+			server.checkKey(overSize);
+		} catch (KVException e) {
+			assertEquals("Oversized key", e.getMsg().getMessage());
+		}
 	}
 
-	@Test (expected = KVException.class)
-	public void zeroKeyTest() throws KVException {
-		thrown.expectMessage(JUnitMatchers.containsString("Unknown Error: Zero Size Key"));
-		server.checkKey("");
+	public void testZeroKey() throws KVException {
+		try {
+			server.checkKey("");
+		} catch (KVException e) {
+			assertEquals("Unknown Error: Zero Size Key", e.getMsg().getMessage());
+		}
 	}
 
 	//
 	//checkValue() tests
 	//
-	@Test (expected = KVException.class)
-	public void nullValueTest() throws KVException {
-		thrown.expectMessage(JUnitMatchers.containsString("Unknown Error: Null Value"));
-		server.checkValue(null);
+	public void testNullValue() {
+		try {
+			server.checkValue(null);
+		} catch (KVException e) {
+			assertEquals("Unknown Error: Null Value", e.getMsg().getMessage());
+		}
 	}
 	
-	@Test (expected = KVException.class)
-	public void oversizedValueTest() throws KVException {
-		thrown.expectMessage(JUnitMatchers.containsString("Oversized value"));
+	public void testOversizedValue() throws KVException {
 		String overSize = null;
-		for (int i = 0; i < 256 * 1024; i++) {
-			overSize += "k";
+		for (int i = 0; i < 1024; i++) {
+			overSize += "kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk";
 		}
-		server.checkValue(overSize);
+		try {
+			server.checkValue(overSize);
+		} catch (KVException e) {
+			assertEquals("Oversized value", e.getMsg().getMessage());
+		}
 	}
 
-	@Test (expected = KVException.class)
-	public void zeroValueTest() throws KVException {
-		thrown.expectMessage(JUnitMatchers.containsString("Unknown Error: Zero Size Value"));
-		server.checkValue("");
+	public void testZeroValue() throws KVException {
+		try {
+			server.checkValue("");
+		} catch (KVException e) {
+			assertEquals("Unknown Error: Zero Size Value", e.getMsg().getMessage());
+		}
 	}
 	
 	//
 	//put() tests
 	//
 	@Test
-	public void putTest1() throws KVException {
-		server.put("1", "hello");
-		assertEquals("hello", server.get("1"));
-		server.del("1");
+	public void testPut1() {
+		String a = "";
+		try {
+			System.out.println("HI");
+			server.put("1", "hello");
+			System.out.println("BYE");
+			a = server.get("1");
+			assertEquals("hello", a);
+		} catch (KVException e) {
+		}
 	}
 	
 	@Test
