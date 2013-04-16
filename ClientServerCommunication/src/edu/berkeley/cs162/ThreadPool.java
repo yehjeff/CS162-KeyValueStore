@@ -39,7 +39,7 @@ public class ThreadPool {
 	 * Set of threads in the threadpool
 	 * More instance variables
 	 */
-	protected Thread threads[] = null;
+	public Thread threads[] = null;	   //was protected, temporarily pubic
 	
 	public LinkedList<Runnable> jobs;  //temporary for testing
 	private Lock jobsLock;
