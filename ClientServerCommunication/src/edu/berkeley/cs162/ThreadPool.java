@@ -41,10 +41,10 @@ public class ThreadPool {
 	 */
 	protected Thread threads[] = null;
 	
-	LinkedList<Runnable> jobs;
-	Lock jobsLock;
-	Condition jobsCondition;
-	Boolean shutdown;
+	public LinkedList<Runnable> jobs;  //temporary for testing
+	private Lock jobsLock;
+	private Condition jobsCondition;
+	private Boolean shutdown;
 
 	/**
 	 * Initialize the number of threads required in the threadpool. 
@@ -60,7 +60,7 @@ public class ThreadPool {
 		threads = new Thread[size];
 		for (int i = 0; i < size; i++){
 			threads[i] = new WorkerThread(this);
-			threads[i].run();
+		//	threads[i].run();							// also temporary
 		}
 	}
 
@@ -93,8 +93,12 @@ public class ThreadPool {
 		return newJob;
 	}
 	
-	public Boolean getShutdownStatus() throws InterruptedException {
+	public Boolean getShutdownStatus() {
 		return this.shutdown;
+	}
+	
+	public void setShutdownStatus() {
+		this.shutdown = true;
 	}
 }
 
@@ -121,13 +125,13 @@ class WorkerThread extends Thread {
 	public void run()
 	{
 		try {
-			while (this.threadPool.getShutdownStatus()) {
+			while (!this.threadPool.getShutdownStatus()) {
 				threadPool.getJob().run();
 			}
 			threadPool.getJob().run(); // runs final job
 		}
 		catch (InterruptedException e) {
-			//throw e              // not working for some reason...
+			//throw e
 		}
 	}
 }
