@@ -22,7 +22,11 @@ public class TestKVCache extends TestCase {
 	//SUPER TEST FUNCTION
 	public void testGetPutDel() {	//what about null arguments?
 		//WITH AN EMPTY CACHE, all calls to get(key) should return null for any key
-		
+		int numSets = 4;
+		int maxElemsPerSet = 4;
+		KVCache cache = new KVCache(numSets,maxElemsPerSet);
+		cache.put("key1", "value1");
+		System.out.println(cache.toXML());
 		//WITH NONEMPTY CACHE
 		
 	}
