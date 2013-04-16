@@ -77,11 +77,11 @@ public class KVCache implements KeyValueInterface {
 				sets[i][j] = new Entry();
 			}
 		}
-		
+
 		// TODO: Implement Me!
 	}
 
-	
+
 	/**
 	 * Retrieves an entry from the cache.
 	 * Assumes the corresponding set has already been locked for writing.
@@ -92,20 +92,24 @@ public class KVCache implements KeyValueInterface {
 		// Must be called before anything else
 		AutoGrader.agCacheGetStarted(key);
 		AutoGrader.agCacheGetDelay();
-        String valueToReturn = null;
-		// TODO: Implement Me!
-		int setId = this.getSetId(key);
-		for (int i = 0; i < this.maxElemsPerSet; i++){
-			Entry entry = this.sets[setId][i];
-			if (entry.isValid() && entry.getKey().equals(key)){
-				entry.turnOnReferenceBit();
-				valueToReturn = entry.getValue();			
+		try{
+			String valueToReturn = null;
+			// TODO: Implement Me!
+			int setId = this.getSetId(key);
+			for (int i = 0; i < this.maxElemsPerSet; i++){
+				Entry entry = this.sets[setId][i];
+				if (entry.isValid() && entry.getKey().equals(key)){
+					entry.turnOnReferenceBit();
+					valueToReturn = entry.getValue();			
+				}
 			}
+			return valueToReturn;
+
+		} finally {
+
+			// Must be called before returning
+			AutoGrader.agCacheGetFinished(key);
 		}
-		
-		// Must be called before returning
-		AutoGrader.agCacheGetFinished(key);
-		return valueToReturn;
 	}
 
 	/**
@@ -121,46 +125,47 @@ public class KVCache implements KeyValueInterface {
 		// Must be called before anything else
 		AutoGrader.agCachePutStarted(key, value);
 		AutoGrader.agCachePutDelay();
+
 		// TODO: Implement Me!
-		int setId = this.getSetId(key);
-		
-		for (int i = 0; i < this.maxElemsPerSet; i++){
-			Entry entry = this.sets[setId][i];
-			if (entry.isValid() && entry.getKey().equals(key)){
-				entry.setValue(value);
-				entry.turnOffReferenceBit();
-				AutoGrader.agCachePutFinished(key, value);
-				return;
+		try { 
+			int setId = this.getSetId(key);
+
+			for (int i = 0; i < this.maxElemsPerSet; i++){
+				Entry entry = this.sets[setId][i];
+				if (entry.isValid() && entry.getKey().equals(key)){
+					entry.setValue(value);
+					entry.turnOffReferenceBit();
+					return;
+				}
 			}
-		}
-		
-		for (int i = 0; i < this.maxElemsPerSet; i++){
-			Entry entry = this.sets[setId][i];
-			if (!entry.isValid()){
-				entry.setValue(value);
-				entry.setKey(key);
+
+			for (int i = 0; i < this.maxElemsPerSet; i++){
+				Entry entry = this.sets[setId][i];
+				if (!entry.isValid()){
+					entry.setValue(value);
+					entry.setKey(key);
+					entry.turnOffReferenceBit();
+					entry.turnOnValidBit();
+					set2CQueues[setId].addLast(entry);
+					return;
+				}
+			}
+
+			Entry entry = set2CQueues[setId].removeFirst();
+			while (entry.getReferenceBit()){
 				entry.turnOffReferenceBit();
-				entry.turnOnValidBit();
 				set2CQueues[setId].addLast(entry);
-				AutoGrader.agCachePutFinished(key, value);
-				return;
+				entry = set2CQueues[setId].removeFirst();
 			}
-		}
-		
-		Entry entry = set2CQueues[setId].removeFirst();
-		while (entry.getReferenceBit()){
-			entry.turnOffReferenceBit();
+			entry.setValue(value);
+			entry.setKey(key);
+			entry.turnOnReferenceBit();
+			entry.turnOnValidBit();
 			set2CQueues[setId].addLast(entry);
-			entry = set2CQueues[setId].removeFirst();
+			return;
+		} finally {
+			AutoGrader.agCachePutFinished(key, value);
 		}
-		entry.setValue(value);
-		entry.setKey(key);
-		entry.turnOnReferenceBit();
-		entry.turnOnValidBit();
-		set2CQueues[setId].addLast(entry);
-		AutoGrader.agCachePutFinished(key, value);
-		return;
-		
 		// Must be called before returning
 	}
 
@@ -171,30 +176,33 @@ public class KVCache implements KeyValueInterface {
 	 */
 	public void del (String key) {
 		// Must be called before anything else
-		AutoGrader.agCacheGetStarted(key);
+		AutoGrader.agCacheDelStarted(key);
 		AutoGrader.agCacheDelDelay();
-		
+
 		// TODO: Implement Me!
-		int setId = this.getSetId(key);
-		for (int i = 0; i < this.maxElemsPerSet; i++){
-			Entry entry = this.sets[setId][i];
-			if (entry.getKey().equals(key) && entry.isValid())
-				entry.turnOffValidBit();
+		try{
+			int setId = this.getSetId(key);
+			for (int i = 0; i < this.maxElemsPerSet; i++){
+				Entry entry = this.sets[setId][i];
+				if (entry.getKey().equals(key) && entry.isValid())
+					entry.turnOffValidBit();
+			} 
+		} finally {
+			// Must be called before returning
+			AutoGrader.agCacheDelFinished(key);
 		}
-		// Must be called before returning
-		AutoGrader.agCacheDelFinished(key);
 	}
-	
+
 	/**
 	 * @param key
 	 * @return	the write lock of the set that contains key.
 	 */
 	public WriteLock getWriteLock(String key) {
-	    // TODO: Implement Me!
+		// TODO: Implement Me!
 		int setId = this.getSetId(key);
 		return this.setWriteLocks[setId];
 	}
-	
+
 	/**
 	 * 
 	 * @param key
@@ -203,12 +211,12 @@ public class KVCache implements KeyValueInterface {
 	private int getSetId(String key) {
 		return Math.abs(key.hashCode()) % numSets;
 	}
-	
-    public String toXML() {
-        // TODO: Implement Me!
-    	try {
+
+	public String toXML() {
+		// TODO: Implement Me!
+		try {
 			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-			
+
 			Document doc = builder.newDocument();
 			Element KVCacheElement = doc.createElement("KVCache");
 			doc.appendChild(KVCacheElement);
@@ -221,27 +229,27 @@ public class KVCache implements KeyValueInterface {
 
 					boolean isValid = entry.isValid();
 					boolean isReferenced = entry.getReferenceBit();
-					
-					
+
+
 					Element cacheEntryElement = doc.createElement("CacheEntry");
 					cacheEntryElement.setAttribute("isReferenced", ""+isReferenced);
 					cacheEntryElement.setAttribute("isValid", ""+isValid);
-					
+
 					String key = entry.getKey();
 					Element keyElement = doc.createElement("Key");
 					keyElement.appendChild(doc.createTextNode(key));
 					cacheEntryElement.appendChild(keyElement);
-					
+
 					String value = entry.getValue();
 					Element valueElement = doc.createElement("Value");
 					valueElement.appendChild(doc.createTextNode(value));
 					cacheEntryElement.appendChild(valueElement);
-					
+
 					setElement.appendChild(cacheEntryElement);
-					
-					
+
+
 				}
-				
+
 			}
 			StringWriter writer = new StringWriter();
 			Transformer transformer = TransformerFactory.newInstance().newTransformer();
@@ -252,69 +260,69 @@ public class KVCache implements KeyValueInterface {
 			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
 			transformer.transform(new DOMSource(doc), new StreamResult(writer));
 			return writer.toString();
-			
-			
+
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-    	
-        return null;
-    }
-    
-    private class Entry{
-    	private String key;
-    	private String value;
-    	private boolean referenceBit;
-    	private boolean valid;
-    	
-    	public Entry(){
-    		this.valid = false;
-    		this.key = "";
-    		this.value = "";
-    	}
-    	
-    	public String getKey(){
-    		return this.key;
-    	}
-    	
-    	public void setKey(String key){
-    		this.key = key;
-    	}
-    	
-    	public String getValue(){
-    		return this.value;
-    	}
-    	
-    	public void setValue(String value){
-    		this.value = value;
-    	}
-    	
-    	public boolean getReferenceBit(){
-    		return this.referenceBit;
-    	}
-    	
-    	public void turnOnReferenceBit(){
-    		this.referenceBit = true;
-    	}
-    	
-    	public void turnOffReferenceBit(){
-    		this.referenceBit = false;
-    	}
-    	
-    	public boolean isValid(){
-    		return this.valid;
-    	}
-    	
-    	public void turnOnValidBit(){
-    		this.valid = true;
-    	}
-    	
-    	public void turnOffValidBit(){
-    		this.valid = false;
-    	}
-    	
-    	
-    }
+
+		return null;
+	}
+
+	private class Entry{
+		private String key;
+		private String value;
+		private boolean referenceBit;
+		private boolean valid;
+
+		public Entry(){
+			this.valid = false;
+			this.key = "";
+			this.value = "";
+		}
+
+		public String getKey(){
+			return this.key;
+		}
+
+		public void setKey(String key){
+			this.key = key;
+		}
+
+		public String getValue(){
+			return this.value;
+		}
+
+		public void setValue(String value){
+			this.value = value;
+		}
+
+		public boolean getReferenceBit(){
+			return this.referenceBit;
+		}
+
+		public void turnOnReferenceBit(){
+			this.referenceBit = true;
+		}
+
+		public void turnOffReferenceBit(){
+			this.referenceBit = false;
+		}
+
+		public boolean isValid(){
+			return this.valid;
+		}
+
+		public void turnOnValidBit(){
+			this.valid = true;
+		}
+
+		public void turnOffValidBit(){
+			this.valid = false;
+		}
+
+
+	}
 }

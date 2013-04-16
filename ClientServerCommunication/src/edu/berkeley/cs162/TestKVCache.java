@@ -13,9 +13,7 @@ public class TestKVCache extends TestCase {
 	
 	//SUPER TEST FUNCTION
 	public void testGetPutDel() {	//what about null arguments?
-		int numSets = 4;
-		int maxElemsPerSet = 4;
-		KVCache cache = new KVCache(numSets,maxElemsPerSet);
+		KVCache cache = new KVCache(4,4);
 		
 		//all calls to get should return null when nothing is inside the cache
 		String getReturnValue;
@@ -63,9 +61,7 @@ public class TestKVCache extends TestCase {
 	
 	public void testEvictionPolicy(){
 		//to ensure kv pairs are in the same set, have a single-set cache
-		int numSets = 1;
-		int maxElemsPerSet = 4;
-		KVCache cache = new KVCache(numSets, maxElemsPerSet);
+		KVCache cache = new KVCache(1, 4);
 		String getReturn;
 		//fill up the set first
 		cache.put("key1", "value1");
@@ -122,7 +118,8 @@ public class TestKVCache extends TestCase {
 	}
 	
 	public void testToXml() {
-		//Check the return value of toXML() with an empty cache
+
+		//Check the return value of toXML() with an empty cache, use parser for comparison
 		KVCache cacheEmpty = new KVCache(4,4);
 				
 		//Check the return value of toXML() with a non-empty cache
