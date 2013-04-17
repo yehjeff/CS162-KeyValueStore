@@ -237,6 +237,7 @@ public class TestKVMessage extends TestCase {
 	}
 	
 	//test for invalid XML formats that do throw an error
+	
 	public void testInputConstructorInvalidWillError() {
 		try {
 			ByteArrayInputStream testInputStream1 = new ByteArrayInputStream(XMLgibberish.getBytes("UTF-8"));
@@ -264,7 +265,7 @@ public class TestKVMessage extends TestCase {
 			KV = new KVMessage("getreq");
 			KV.setKey("KEY");
 			//KV.setValue("VAL");
-			//getKV.setMessage("MSG");
+			//KV.setMessage("MSG");
 			xmlStr = KV.toXML();
 			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			input = new ByteArrayInputStream(xmlStr.getBytes("UTF-8"));
@@ -283,7 +284,7 @@ public class TestKVMessage extends TestCase {
 			KV = new KVMessage("putreq");
 			KV.setKey("KEY");
 			KV.setValue("VAL");
-			//getKV.setMessage("MSG");
+			//KV.setMessage("MSG");
 			xmlStr = KV.toXML();
 			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			input = new ByteArrayInputStream(xmlStr.getBytes("UTF-8"));
@@ -302,7 +303,7 @@ public class TestKVMessage extends TestCase {
 			KV = new KVMessage("delreq");
 			KV.setKey("KEY");
 			//KV.setValue("VAL");
-			//getKV.setMessage("MSG");
+			//KV.setMessage("MSG");
 			xmlStr = KV.toXML();
 			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			input = new ByteArrayInputStream(xmlStr.getBytes("UTF-8"));
@@ -321,7 +322,7 @@ public class TestKVMessage extends TestCase {
 			KV = new KVMessage("resp"); //response type1
 			KV.setKey("KEY");
 			KV.setValue("VAL");
-			//getKV.setMessage("MSG");
+			//KV.setMessage("MSG");
 			xmlStr = KV.toXML();
 			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			input = new ByteArrayInputStream(xmlStr.getBytes("UTF-8"));
@@ -336,11 +337,41 @@ public class TestKVMessage extends TestCase {
 			//assertEquals("Should have same value", "VAL", KVElement.getElementsByTagName("Value").item(0).getTextContent());
 			assertEquals("Should contain no message", 0, KVElement.getElementsByTagName("Message").getLength());
 			//assertEquals("Should have same message", "MSG", KVElement.getElementsByTagName("Message").item(0).getTextContent());
+			
+			KV = new KVMessage("resp"); //response type2
+			//KV.setKey("KEY");
+			//KV.setValue("VAL");
+			KV.setMessage("MSG");
+			xmlStr = KV.toXML();
+			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			input = new ByteArrayInputStream(xmlStr.getBytes("UTF-8"));
+			//parse the xml that toXML made, done similar as the input stream constructor so I assume that wors which I have tested before this
+			doc = builder.parse(input);
+			KVElement = (Element) doc.getElementsByTagName("KVMessage").item(0);			
+			assertEquals("Should contain a single KVMessage", 1, doc.getElementsByTagName("KVMessage").getLength());
+			assertEquals("Should have same msgType", "resp", KVElement.getAttribute("type"));
+			assertEquals("Should contain no key", 0, KVElement.getElementsByTagName("Key").getLength());
+			//assertEquals("Should have same key", "KEY", KVElement.getElementsByTagName("Key").item(0).getTextContent());
+			assertEquals("Should contain no value", 0, KVElement.getElementsByTagName("Value").getLength());
+			//assertEquals("Should have same value", "VAL", KVElement.getElementsByTagName("Value").item(0).getTextContent());
+			assertEquals("Should contain a single message", 1, KVElement.getElementsByTagName("Message").getLength());
+			assertEquals("Should have same message", "MSG", KVElement.getElementsByTagName("Message").item(0).getTextContent());
+			
 		} catch (KVException e) {
 			System.out.println(e.getMsg().getMessage());
 			fail("a KVException was thrown when it shouldn't have been");
 		} catch (Exception e) {
 			fail("an exception was thrown when it shouldn't have been");
+		}
+	}
+	
+	public void testToXMLInvalid() {
+		try {
+			KVMessage temp = new KVMessage("temp");
+		} catch (KVException e) {
+			
+		} catch (Exception e) {
+			
 		}
 	}
 }
