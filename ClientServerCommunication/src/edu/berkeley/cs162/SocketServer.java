@@ -56,7 +56,7 @@ public class SocketServer {
 	public void connect() throws IOException {
 		// TODO: implement me
 		try {
-			server = new ServerSocket(8080);
+			server = new ServerSocket(port);
 		} catch (IOException e) {
 			throw e;
 		}
