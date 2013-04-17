@@ -154,6 +154,7 @@ public class KVServer implements KeyValueInterface {
 			storeLock.lock();
 
 			dataCache.getWriteLock(key).unlock();
+			
 		} finally {
 			// Must be called before return or abnormal exit
 			AutoGrader.agKVServerDelFinished(key);
