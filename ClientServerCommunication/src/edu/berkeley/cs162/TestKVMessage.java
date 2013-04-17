@@ -7,6 +7,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import junit.framework.TestCase;
 
@@ -253,14 +254,93 @@ public class TestKVMessage extends TestCase {
 	//guh this sucks, i can see that it works... i don't want to parse the result... and so many of them...
 	public void testToXMLValid() {
 		try {
-			KVMessage getKV = new KVMessage("resp");
-			getKV.setKey("KEY");
-			getKV.setValue("VAL");
+			DocumentBuilder builder;
+			Document doc;
+			ByteArrayInputStream input;
+			String xmlStr;
+			KVMessage KV;
+			Element KVElement;
+			
+			KV = new KVMessage("getreq");
+			KV.setKey("KEY");
+			//KV.setValue("VAL");
 			//getKV.setMessage("MSG");
-			System.out.println(getKV.toXML());
+			xmlStr = KV.toXML();
+			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			input = new ByteArrayInputStream(xmlStr.getBytes("UTF-8"));
+			//parse the xml that toXML made, done similar as the input stream constructor so I assume that wors which I have tested before this
+			doc = builder.parse(input);
+			KVElement = (Element) doc.getElementsByTagName("KVMessage").item(0);			
+			assertEquals("Should contain a single KVMessage", 1, doc.getElementsByTagName("KVMessage").getLength());
+			assertEquals("Should have same msgType", "getreq", KVElement.getAttribute("type"));
+			assertEquals("Should contain a single key", 1, KVElement.getElementsByTagName("Key").getLength());
+			assertEquals("Should have same key", "KEY", KVElement.getElementsByTagName("Key").item(0).getTextContent());
+			assertEquals("Should contain no value", 0, KVElement.getElementsByTagName("Value").getLength());
+			//assertEquals("Should have same value", "VAL", KVElement.getElementsByTagName("Value").item(0).getTextContent());
+			assertEquals("Should contain no message", 0, KVElement.getElementsByTagName("Message").getLength());
+			//assertEquals("Should have same message", "MSG", KVElement.getElementsByTagName("Message").item(0).getTextContent());
+			
+			KV = new KVMessage("putreq");
+			KV.setKey("KEY");
+			KV.setValue("VAL");
+			//getKV.setMessage("MSG");
+			xmlStr = KV.toXML();
+			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			input = new ByteArrayInputStream(xmlStr.getBytes("UTF-8"));
+			//parse the xml that toXML made, done similar as the input stream constructor so I assume that wors which I have tested before this
+			doc = builder.parse(input);
+			KVElement = (Element) doc.getElementsByTagName("KVMessage").item(0);			
+			assertEquals("Should contain a single KVMessage", 1, doc.getElementsByTagName("KVMessage").getLength());
+			assertEquals("Should have same msgType", "putreq", KVElement.getAttribute("type"));
+			assertEquals("Should contain a single key", 1, KVElement.getElementsByTagName("Key").getLength());
+			assertEquals("Should have same key", "KEY", KVElement.getElementsByTagName("Key").item(0).getTextContent());
+			assertEquals("Should contain a single value", 1, KVElement.getElementsByTagName("Value").getLength());
+			assertEquals("Should have same value", "VAL", KVElement.getElementsByTagName("Value").item(0).getTextContent());
+			assertEquals("Should contain no message", 0, KVElement.getElementsByTagName("Message").getLength());
+			//assertEquals("Should have same message", "MSG", KVElement.getElementsByTagName("Message").item(0).getTextContent());
+			
+			KV = new KVMessage("delreq");
+			KV.setKey("KEY");
+			//KV.setValue("VAL");
+			//getKV.setMessage("MSG");
+			xmlStr = KV.toXML();
+			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			input = new ByteArrayInputStream(xmlStr.getBytes("UTF-8"));
+			//parse the xml that toXML made, done similar as the input stream constructor so I assume that wors which I have tested before this
+			doc = builder.parse(input);
+			KVElement = (Element) doc.getElementsByTagName("KVMessage").item(0);			
+			assertEquals("Should contain a single KVMessage", 1, doc.getElementsByTagName("KVMessage").getLength());
+			assertEquals("Should have same msgType", "delreq", KVElement.getAttribute("type"));
+			assertEquals("Should contain a single key", 1, KVElement.getElementsByTagName("Key").getLength());
+			assertEquals("Should have same key", "KEY", KVElement.getElementsByTagName("Key").item(0).getTextContent());
+			assertEquals("Should contain no value", 0, KVElement.getElementsByTagName("Value").getLength());
+			//assertEquals("Should have same value", "VAL", KVElement.getElementsByTagName("Value").item(0).getTextContent());
+			assertEquals("Should contain no message", 0, KVElement.getElementsByTagName("Message").getLength());
+			//assertEquals("Should have same message", "MSG", KVElement.getElementsByTagName("Message").item(0).getTextContent());
+			
+			KV = new KVMessage("resp"); //response type1
+			KV.setKey("KEY");
+			KV.setValue("VAL");
+			//getKV.setMessage("MSG");
+			xmlStr = KV.toXML();
+			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			input = new ByteArrayInputStream(xmlStr.getBytes("UTF-8"));
+			//parse the xml that toXML made, done similar as the input stream constructor so I assume that wors which I have tested before this
+			doc = builder.parse(input);
+			KVElement = (Element) doc.getElementsByTagName("KVMessage").item(0);			
+			assertEquals("Should contain a single KVMessage", 1, doc.getElementsByTagName("KVMessage").getLength());
+			assertEquals("Should have same msgType", "resp", KVElement.getAttribute("type"));
+			assertEquals("Should contain a single key", 1, KVElement.getElementsByTagName("Key").getLength());
+			assertEquals("Should have same key", "KEY", KVElement.getElementsByTagName("Key").item(0).getTextContent());
+			assertEquals("Should contain a single value", 1, KVElement.getElementsByTagName("Value").getLength());
+			//assertEquals("Should have same value", "VAL", KVElement.getElementsByTagName("Value").item(0).getTextContent());
+			assertEquals("Should contain no message", 0, KVElement.getElementsByTagName("Message").getLength());
+			//assertEquals("Should have same message", "MSG", KVElement.getElementsByTagName("Message").item(0).getTextContent());
 		} catch (KVException e) {
 			System.out.println(e.getMsg().getMessage());
-			fail("an exception was thrown");
+			fail("a KVException was thrown when it shouldn't have been");
+		} catch (Exception e) {
+			fail("an exception was thrown when it shouldn't have been");
 		}
 	}
 }
