@@ -94,8 +94,9 @@ public class KVMessage {
 	    public NoCloseInputStream(InputStream in) {
 	        super(in);
 	    }
-	    
-	    public void close() {} // ignore close
+	  
+	    public void close() {
+	    } // ignore close
 	}
 	
 	/***
@@ -142,7 +143,7 @@ public class KVMessage {
 	     try {
 	    	 DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 	    	//do the parsing now
-	    	 Document doc = builder.parse(input);
+	    	 Document doc = builder.parse(new NoCloseInputStream(input));
 	    	 //finds the first (and theoretically only) KVMessage tag
 	    	 Node KVmsg = doc.getElementsByTagName("KVMessage").item(0);
 	    	 //casts the node as an element (which extends node) to access attributes.
@@ -302,7 +303,8 @@ public class KVMessage {
 	      	String outputMsg = this.toXML();
 	      	byte[] toSend = outputMsg.getBytes();
 	      	outStream.write(toSend);
-	      	outStream.close();
+	      	outStream.flush();
+	      	sock.shutdownOutput();
 		} catch (IOException IOErr) {
 			KVMessage exceptMsg = new KVMessage("resp", "Network Error: Could not send data");
 			throw new KVException(exceptMsg);

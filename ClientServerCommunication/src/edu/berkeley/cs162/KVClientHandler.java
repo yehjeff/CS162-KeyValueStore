@@ -72,21 +72,28 @@ public class KVClientHandler implements NetworkHandler {
 		            response.setKey(request.getKey());
 		            response.setValue(value);
 		            response.sendMessage(client);
+		            client.close();
 		        } else if (request.getMsgType().equals("putreq")) {
 		            kvServer.put(request.getKey(),request.getValue());
 		            response.setMessage("Success");
 		            response.sendMessage(client);
+		            client.close();
 		        } else if (request.getMsgType().equals("delreq")) {
 		        	kvServer.del(request.getKey());
 		        	response.setMessage("Success");
 		            response.sendMessage(client);
+		            client.close();
+
 		        }
 		    } catch (KVException e) {
 		        response.setMessage(e.getMsg().getMsgType());  //ADDED getMsgType()
 		        try {
 					response.sendMessage(client);
+		            client.close();
 				} catch (KVException e1) {
 					e1.printStackTrace();			//?????????????????
+				} catch (IOException e2){
+					e2.printStackTrace();
 				}
 		    } catch (IOException e) {
 		    	e.printStackTrace();				//????????????????
