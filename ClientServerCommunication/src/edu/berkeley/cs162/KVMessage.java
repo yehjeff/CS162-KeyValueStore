@@ -146,6 +146,10 @@ public class KVMessage {
 	    	 //finds the first (and theoretically only) KVMessage tag
 	    	 Node KVmsg = doc.getElementsByTagName("KVMessage").item(0);
 	    	 //casts the node as an element (which extends node) to access attributes.
+	    	 if (KVmsg == null) {
+	    		 KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: No 'KVMessage' Tag");
+		    	 throw new KVException(exceptMsg);
+	    	 }
 	    	 Element KVElement = (Element) KVmsg;
 	    	 //gets the msgType from KVMessage's attribute field
 	    	 this.msgType = KVElement.getAttribute("type");
@@ -278,6 +282,7 @@ public class KVMessage {
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
 			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+			doc.setXmlStandalone(true);
 			transformer.transform(new DOMSource(doc), new StreamResult(writer));
 			return writer.toString();
 		} catch (ParserConfigurationException e) {

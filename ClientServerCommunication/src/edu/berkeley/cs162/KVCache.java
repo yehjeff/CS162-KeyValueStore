@@ -218,6 +218,7 @@ public class KVCache implements KeyValueInterface {
 			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 
 			Document doc = builder.newDocument();
+			doc.setXmlStandalone(true);
 			Element KVCacheElement = doc.createElement("KVCache");
 			doc.appendChild(KVCacheElement);
 			for (int i = 0; i < this.numSets; i++){
