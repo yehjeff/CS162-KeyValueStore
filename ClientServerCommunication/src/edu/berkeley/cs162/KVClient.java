@@ -109,7 +109,7 @@ public class KVClient implements KeyValueInterface {
 			
 			// Throw an exception if the command wasn't successful
 			// changed to use .equals()
-			if (exceptMsg.getMessage().equals("Success") ){
+			if (!exceptMsg.getMessage().equals("Success") ){
 			
 				throw new KVException(exceptMsg);
 			}
@@ -133,7 +133,14 @@ public class KVClient implements KeyValueInterface {
 			InputStream inputStream = sock.getInputStream();
 			KVMessage responseMsg = new KVMessage(inputStream);
 			closeHost(sock);
-			return responseMsg.getValue();
+			KVMessage exceptMsg = new KVMessage("resp");
+			exceptMsg.setMessage(responseMsg.getMessage());
+			
+			if (exceptMsg.getValue() == null) {
+				throw new KVException(exceptMsg);
+			}
+			else return responseMsg.getValue();
+			
 		}
 		catch (IOException f){
 			KVMessage exceptMsg = new KVMessage("resp");
@@ -158,7 +165,7 @@ public class KVClient implements KeyValueInterface {
 			exceptMsg.setMessage(responseMsg.getMessage());
 			
 			// Throw an exception if the command wasn't successful
-			if (exceptMsg.getMessage().equals("Success") ){
+			if (!exceptMsg.getMessage().equals("Success") ){
 				throw new KVException(exceptMsg);
 			}
 		}
