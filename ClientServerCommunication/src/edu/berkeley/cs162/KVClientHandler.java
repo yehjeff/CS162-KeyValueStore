@@ -67,16 +67,16 @@ public class KVClientHandler implements NetworkHandler {
 		    try {
 				response = new KVMessage("resp");
 		    	KVMessage request = new KVMessage(client.getInputStream());
-		        if (request.getMsgType() == "getreq") {
+		        if (request.getMsgType().equals("getreq")) {
 		            String value = kvServer.get(request.getKey());
 		            response.setKey(request.getKey());
 		            response.setValue(value);
 		            response.sendMessage(client);
-		        } else if (request.getMsgType() == "putreq") {
+		        } else if (request.getMsgType().equals("putreq")) {
 		            kvServer.put(request.getKey(),request.getValue());
 		            response.setMessage("Success");
 		            response.sendMessage(client);
-		        } else if (request.getMsgType() == "delreq") {
+		        } else if (request.getMsgType().equals("delreq")) {
 		        	kvServer.del(request.getKey());
 		        	response.setMessage("Success");
 		            response.sendMessage(client);
