@@ -108,7 +108,7 @@ public class KVClient implements KeyValueInterface {
 			exceptMsg.setMessage(responseMsg.getMessage());
 			
 			// Throw an exception if the command wasn't successful
-			if (exceptMsg.getMessage() != "Success" ){
+			if (exceptMsg.getMessage().equals("Success") ){
 				throw new KVException(exceptMsg);
 			}
 		}
