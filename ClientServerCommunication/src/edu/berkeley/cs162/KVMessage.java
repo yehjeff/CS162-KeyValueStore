@@ -105,7 +105,7 @@ public class KVMessage {
 	 */
 	public KVMessage(String msgType) throws KVException {
 		//first check for valid msgType where valid = getreq, putreq. delreq, or resp
-	    if ((msgType == "getreq") || (msgType == "putreq") || (msgType == "delreq") || (msgType == "resp")) {
+	    if ((msgType.equals("getreq")) || (msgType.equals("putreq")) || (msgType.equals("delreq")) || (msgType.equals("resp"))) {
 	    	//passed msgType checking
 	    	this.msgType = msgType;
 	    } else {
@@ -117,7 +117,7 @@ public class KVMessage {
 	
 	public KVMessage(String msgType, String message) throws KVException {
 		//first check for valid msgType where valid = getreq, putreq. delreq, or resp
-	    if ((msgType == "getreq") || (msgType == "putreq") || (msgType == "delreq") || (msgType == "resp")) {
+	    if ((msgType.equals("getreq")) || (msgType.equals("putreq")) || (msgType.equals("delreq")) || (msgType.equals("resp"))) {
 	    	//passed msgType checking
 	    	this.msgType = msgType;
 	    	this.message = message;
@@ -206,14 +206,14 @@ public class KVMessage {
 				throw new KVException(exceptMsg);
 			}
 			//confirm for different msgTypes
-			if (this.msgType == "getreq") {
+			if (this.msgType.equals("getreq")) {
 				includeKey = true;
-			} else if (this.msgType == "putreq") {
+			} else if (this.msgType.equals("putreq")) {
 				includeKey = true;
 				includeVal = true;
-			} else if (this.msgType == "delreq") {
+			} else if (this.msgType.equals("delreq")) {
 				includeKey = true;
-			} else if (this.msgType == "resp") {
+			} else if (this.msgType.equals("resp")) {
 				//we control this, so if not null return it!
 				if (this.key != null) {
 					includeKey = true;
@@ -224,7 +224,6 @@ public class KVMessage {
 				if (this.message != null) {
 					includeMsg = true;
 				}
-				//TODO: if all 3 are true, complain?
 				// or if it doesnt satisfy only msg or only key/value then complain
 				if (!(((includeKey == true) && (includeVal == true) && (includeMsg == false)) || ((includeKey == false) && (includeVal == false) && (includeMsg == true)))) {
 					KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Incorrect fields for 'resp' msgType");
