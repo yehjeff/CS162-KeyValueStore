@@ -125,6 +125,7 @@ public class KVStore implements KeyValueInterface {
 			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			
 			Document doc = builder.newDocument();
+			doc.setXmlStandalone(true);
 			Element KVStoreElement = doc.createElement("KVStore");
 			doc.appendChild(KVStoreElement);
 			Enumeration<String> keysEnumerator = this.store.keys();
