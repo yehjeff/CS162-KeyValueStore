@@ -136,7 +136,7 @@ public class KVClient implements KeyValueInterface {
 			KVMessage exceptMsg = new KVMessage("resp");
 			exceptMsg.setMessage(responseMsg.getMessage());
 			
-			if (exceptMsg.getValue() == null) {
+			if (responseMsg.getValue() == null) {
 				throw new KVException(exceptMsg);
 			}
 			else return responseMsg.getValue();

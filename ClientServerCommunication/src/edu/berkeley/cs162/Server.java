@@ -46,7 +46,7 @@ public class Server {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
-		if (true){
+		if (false){
 		KVClient client = new KVClient("localhost",8080);
 		try {client.put("key1", "value1"); } catch (KVException e) { System.out.println(e.getMsg().getMessage());}
 		
