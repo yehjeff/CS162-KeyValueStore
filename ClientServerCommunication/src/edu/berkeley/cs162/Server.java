@@ -46,20 +46,15 @@ public class Server {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
-		if (false){
-		KVClient client = new KVClient("localhost",8080);
-		try {client.put("key1", "value1"); } catch (KVException e) { System.out.println(e.getMsg().getMessage());}
 		
-		} else {
-			System.out.println("Binding Server:");
-			key_server = new KVServer(100, 10);
-			server = new SocketServer("localhost", 8080);
-			NetworkHandler handler = new KVClientHandler(key_server);
-			server.addHandler(handler);
-			server.connect();
-			System.out.println("Starting Server");
-			server.run();
-		}
+		System.out.println("Binding Server:");
+		key_server = new KVServer(100, 10);
+		server = new SocketServer("localhost", 8080);
+		NetworkHandler handler = new KVClientHandler(key_server);
+		server.addHandler(handler);
+		server.connect();
+		System.out.println("Starting Server");
+		server.run();
 	}
 
 }
