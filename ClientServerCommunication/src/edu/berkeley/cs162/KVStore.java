@@ -171,6 +171,7 @@ public class KVStore implements KeyValueInterface {
     		writer.write(this.toXML());
     		writer.close();
     	} catch (Exception e){
+    		System.err.println("Could not dump store to file");
     		e.printStackTrace();
     	}
     }
