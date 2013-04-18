@@ -62,6 +62,7 @@ public class TestKVClient extends TestCase {
 	public void testClient() {
 		new runServer();
 		
+		// All tests consolidated here
 		KVClient client = new KVClient(server, port);	
 		try {
 			System.out.println("testing put");
