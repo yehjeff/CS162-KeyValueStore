@@ -131,6 +131,8 @@ public class KVServer implements KeyValueInterface {
 				throw e;
 			}
 
+			dataCache.getWriteLock(key).lock();
+
 			dataCache.del(key);
 			storeLock.lock();
 			dataStore.del(key);

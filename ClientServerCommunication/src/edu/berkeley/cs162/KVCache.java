@@ -135,6 +135,8 @@ public class KVCache implements KeyValueInterface {
 				if (entry.isValid() && entry.getKey().equals(key)){
 					entry.setValue(value);
 					entry.turnOffReferenceBit();
+					this.set2CQueues[setId].remove(entry);
+					this.set2CQueues[setId].addLast(entry);
 					return;
 				}
 			}
@@ -152,7 +154,7 @@ public class KVCache implements KeyValueInterface {
 			}
 
 			Entry entry = set2CQueues[setId].removeFirst();
-			while (entry.getReferenceBit()){
+			while (entry.getReferenceBit() && entry.isValid()){
 				entry.turnOffReferenceBit();
 				set2CQueues[setId].addLast(entry);
 				entry = set2CQueues[setId].removeFirst();
@@ -186,6 +188,7 @@ public class KVCache implements KeyValueInterface {
 				Entry entry = this.sets[setId][i];
 				if (entry.isValid() && entry.getKey().equals(key))
 					entry.turnOffValidBit();
+					this.set2CQueues[setId].remove(entry);
 			} 
 		} finally {
 			// Must be called before returning
