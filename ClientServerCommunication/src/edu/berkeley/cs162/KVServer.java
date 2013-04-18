@@ -65,20 +65,15 @@ public class KVServer implements KeyValueInterface {
 
 		// TODO: implement me
 		try {
-			try {
-				checkKey(key);
-				checkValue(value);
-			} catch (KVException e) {
-				throw e;
-			}
+
+			checkKey(key);
+			checkValue(value);
 
 			dataCache.getWriteLock(key).lock();
-
 			dataCache.put(key,value);
 			storeLock.lock();
 			dataStore.put(key,value);
 			storeLock.unlock();
-
 			dataCache.getWriteLock(key).unlock();
 		} finally {
 			// Must be called before return or abnormal exit
@@ -92,24 +87,25 @@ public class KVServer implements KeyValueInterface {
 
 		// TODO: implement me
 		try {
-			try {
-				checkKey(key);
-			} catch (KVException e) {
-				throw e;
-			}
+
+			checkKey(key);
 
 			dataCache.getWriteLock(key).lock();
+			String valueToReturn = dataCache.get(key);			
+			try{
+				if (valueToReturn == null) {
 
-			String valueToReturn = dataCache.get(key);
-			if (valueToReturn == null) {
-
-				storeLock.lock();
-				valueToReturn = dataStore.get(key);
-				storeLock.unlock();
-
-				dataCache.put(key, valueToReturn);
+					storeLock.lock();
+					try {
+						valueToReturn = dataStore.get(key);		//May throw an exception if key is not in store
+					} finally {
+						storeLock.unlock();						//make sure storeLock is unlocked, in case of exception
+					}
+					dataCache.put(key, valueToReturn);
+				}
+			}finally {
+				dataCache.getWriteLock(key).unlock();			//make sure writeLock is unlocked, in case of exception
 			}
-			dataCache.getWriteLock(key).unlock();
 			return valueToReturn;
 		} finally {
 			// Must be called before return or abnormal exit
@@ -121,25 +117,25 @@ public class KVServer implements KeyValueInterface {
 	public void del (String key) throws KVException {
 		// Must be called before anything else
 		AutoGrader.agKVServerDelStarted(key);
-
 		// TODO: implement me
 		try {
+			
+			checkKey(key);
+			
+			dataCache.getWriteLock(key).lock();
 			try {
-				checkKey(key);
-				dataStore.get(key);
-			} catch (KVException e) {
-				throw e;
+				storeLock.lock();
+				try {
+					dataStore.get(key);						// May throw an exception when key does not exist in store
+					dataCache.del(key);
+					dataStore.del(key);
+				} finally {
+					storeLock.unlock();						// Make sure storeLock is unlocked, in case of exception
+				}
+			} finally {
+				dataCache.getWriteLock(key).unlock();		// Make sure writeLock is unlocked, in case of exception
 			}
 
-			dataCache.getWriteLock(key).lock();
-
-			dataCache.del(key);
-			storeLock.lock();
-			dataStore.del(key);
-			storeLock.unlock();
-
-			dataCache.getWriteLock(key).unlock();
-			
 		} finally {
 			// Must be called before return or abnormal exit
 			AutoGrader.agKVServerDelFinished(key);
