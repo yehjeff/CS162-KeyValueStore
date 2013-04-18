@@ -86,7 +86,7 @@ public class KVClientHandler implements NetworkHandler {
 
 		        }
 		    } catch (KVException e) {
-		        response.setMessage(e.getMsg().getMsgType());  //ADDED getMsgType()
+		        response.setMessage(e.getMsg().getMessage());
 		        try {
 					response.sendMessage(client);
 		            client.close();
