@@ -159,7 +159,7 @@ public class KVCache implements KeyValueInterface {
 			}
 			entry.setValue(value);
 			entry.setKey(key);
-			entry.turnOnReferenceBit();
+			entry.turnOffReferenceBit();
 			entry.turnOnValidBit();
 			set2CQueues[setId].addLast(entry);
 			return;
@@ -184,7 +184,7 @@ public class KVCache implements KeyValueInterface {
 			int setId = this.getSetId(key);
 			for (int i = 0; i < this.maxElemsPerSet; i++){
 				Entry entry = this.sets[setId][i];
-				if (entry.getKey().equals(key) && entry.isValid())
+				if (entry.isValid() && entry.getKey().equals(key))
 					entry.turnOffValidBit();
 			} 
 		} finally {
