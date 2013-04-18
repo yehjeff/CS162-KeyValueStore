@@ -1,5 +1,7 @@
 package edu.berkeley.cs162;
 
+import org.junit.Test;
+
 import junit.framework.TestCase;
 
 public class TestKVServer extends TestCase {
@@ -7,6 +9,7 @@ public class TestKVServer extends TestCase {
 	//
 	//checkKey() tests
 	//
+	@Test
 	public void testNullKey() {
 		KVServer server = new KVServer(10, 10);
 		try {
@@ -16,7 +19,8 @@ public class TestKVServer extends TestCase {
 			assertEquals("Unknown Error: Null Key", e.getMsg().getMessage());
 		}
 	}
-	
+
+	@Test
 	public void testOversizedKey() throws KVException {
 		KVServer server = new KVServer(10, 10);
 		String overSize = null;
@@ -31,6 +35,7 @@ public class TestKVServer extends TestCase {
 		}
 	}
 
+	@Test
 	public void testZeroKey() throws KVException {
 		KVServer server = new KVServer(10, 10);
 		try {
@@ -44,6 +49,7 @@ public class TestKVServer extends TestCase {
 	//
 	//checkValue() tests
 	//
+	@Test
 	public void testNullValue() {
 		KVServer server = new KVServer(10, 10);
 		try {
@@ -53,7 +59,8 @@ public class TestKVServer extends TestCase {
 			assertEquals("Unknown Error: Null Value", e.getMsg().getMessage());
 		}
 	}
-	
+
+	@Test
 	public void testOversizedValue() throws KVException {
 		KVServer server = new KVServer(10, 10);
 		String overSize = null;
@@ -68,6 +75,7 @@ public class TestKVServer extends TestCase {
 		}
 	}
 
+	@Test
 	public void testZeroValue() throws KVException {
 		KVServer server = new KVServer(10, 10);
 		try {
@@ -81,6 +89,7 @@ public class TestKVServer extends TestCase {
 	//
 	//put() tests
 	//
+	@Test
 	public void testPut1() {
 		KVServer server = new KVServer(10, 10);
 		try {
@@ -90,7 +99,8 @@ public class TestKVServer extends TestCase {
 			fail();		//never gets here
 		}
 	}
-	
+
+	@Test
 	public void testPut2() throws KVException {
 		KVServer server = new KVServer(10, 10);
 		try {
@@ -101,7 +111,8 @@ public class TestKVServer extends TestCase {
 			fail();		//never gets here
 		}
 	}
-	
+
+	@Test
 	public void testBadPut1() {
 		KVServer server = new KVServer(10, 10);
 		try {
@@ -112,6 +123,7 @@ public class TestKVServer extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBadPut2() throws KVException {
 		KVServer server = new KVServer(10, 10);
 		try {
@@ -125,6 +137,7 @@ public class TestKVServer extends TestCase {
 	//
 	//get() tests
 	//
+	@Test
 	public void testGet() {
 		KVServer server = new KVServer(10, 10);
 		try {
@@ -134,7 +147,8 @@ public class TestKVServer extends TestCase {
 			fail();		//never gets here
 		}
 	}
-	
+
+	@Test
 	public void testBadGet1() {
 		KVServer server = new KVServer(10, 10);
 		try {
@@ -144,7 +158,8 @@ public class TestKVServer extends TestCase {
 			assertEquals("Does not exist", e.getMsg().getMessage());
 		}
 	}
-	
+
+	@Test
 	public void testBadGet2() {
 		KVServer server = new KVServer(10, 10);
 		try {
@@ -155,6 +170,7 @@ public class TestKVServer extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBadGet3() {
 		KVServer server = new KVServer(10, 10);
 		try {
@@ -168,6 +184,7 @@ public class TestKVServer extends TestCase {
 	//
 	//del() tests
 	//
+	@Test
 	public void testDel() {
 		KVServer server = new KVServer(10, 10);
 		String a = "10";
@@ -181,6 +198,7 @@ public class TestKVServer extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBadDel1() {
 		KVServer server = new KVServer(10, 10);
 		try {
@@ -190,7 +208,8 @@ public class TestKVServer extends TestCase {
 			assertEquals("Does not exist", e.getMsg().getMessage());
 		}
 	}
-	
+
+	@Test
 	public void testBadDel2() {
 		KVServer server = new KVServer(10, 10);
 		try {
@@ -201,6 +220,7 @@ public class TestKVServer extends TestCase {
 		}
 	}
 
+	@Test
 	public void testBadDel3() {
 		KVServer server = new KVServer(10, 10);
 		try {
