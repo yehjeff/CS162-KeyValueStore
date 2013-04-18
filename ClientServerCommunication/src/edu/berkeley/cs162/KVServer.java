@@ -90,7 +90,6 @@ public class KVServer implements KeyValueInterface {
 
 			checkKey(key);
 
-
 			dataCache.getWriteLock(key).lock();
 			String valueToReturn = dataCache.get(key);			
 			try{
@@ -118,9 +117,11 @@ public class KVServer implements KeyValueInterface {
 	public void del (String key) throws KVException {
 		// Must be called before anything else
 		AutoGrader.agKVServerDelStarted(key);
-		checkKey(key);
 		// TODO: implement me
 		try {
+			
+			checkKey(key);
+			
 			dataCache.getWriteLock(key).lock();
 			try {
 				storeLock.lock();
