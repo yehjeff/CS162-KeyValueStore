@@ -1,6 +1,7 @@
 package edu.berkeley.cs162;
 
 import java.io.ByteArrayInputStream;
+import java.net.Socket;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -365,13 +366,202 @@ public class TestKVMessage extends TestCase {
 		}
 	}
 	
-	public void testToXMLInvalid() {
+	public void testToXMLInvalidGet() {
 		try {
-			KVMessage temp = new KVMessage("temp");
+			KVMessage KV;
+			String xmlStr;
+			KV = new KVMessage("getreq");
+			//KV.setKey("KEY");
+			//KV.setValue("VAL");
+			//KV.setMessage("MSG");
+			xmlStr = KV.toXML();
+			fail("get request should have failed with the missing KEY field");
+			
 		} catch (KVException e) {
+			//System.out.println(e.getMsg().getMessage());
+			assertEquals("should show expected error message", "Unknown Error: Key is null or zero-length", e.getMsg().getMessage());
+		} 
+	}
+	
+	public void testToXMLInvalidDel() {
+		try {
+			KVMessage KV;
+			String xmlStr;
+			KV = new KVMessage("delreq");
+			//KV.setKey("KEY");
+			//KV.setValue("VAL");
+			//KV.setMessage("MSG");
+			xmlStr = KV.toXML();
+			fail("del request should have failed with the missing KEY field");
+			
+		} catch (KVException e) {
+			//System.out.println(e.getMsg().getMessage());
+			assertEquals("should show expected error message", "Unknown Error: Key is null or zero-length", e.getMsg().getMessage());
+		} 
+	}
+	
+	public void testToXMLInvalidPut1() {
+		try {
+			KVMessage KV;
+			String xmlStr;
+			KV = new KVMessage("putreq");
+			//KV.setKey("KEY");
+			KV.setValue("VAL");
+			//KV.setMessage("MSG");
+			xmlStr = KV.toXML();
+			fail("get request should have failed with the missing KEY field");
+			
+		} catch (KVException e) {
+			//System.out.println(e.getMsg().getMessage());
+			assertEquals("should show expected error message", "Unknown Error: Key is null or zero-length", e.getMsg().getMessage());
+		} 
+	}
+	
+	public void testToXMLInvalidPut2() {
+		try {
+			KVMessage KV;
+			String xmlStr;
+			KV = new KVMessage("putreq");
+			KV.setKey("KEY");
+			//KV.setValue("VAL");
+			//KV.setMessage("MSG");
+			xmlStr = KV.toXML();
+			fail("get request should have failed with the missing VAL field");
+			
+		} catch (KVException e) {
+			//System.out.println(e.getMsg().getMessage());
+			assertEquals("should show expected error message", "Unknown Error: Value is null or zero-length", e.getMsg().getMessage());
+		} 
+	}
+	
+	public void testToXMLInvalidPut3() {
+		try {
+			KVMessage KV;
+			String xmlStr;
+			KV = new KVMessage("putreq");
+			//KV.setKey("KEY");
+			//KV.setValue("VAL");
+			//KV.setMessage("MSG");
+			xmlStr = KV.toXML();
+			fail("get request should have failed with the missing KEY and VAL field");
+			
+		} catch (KVException e) {
+			//System.out.println(e.getMsg().getMessage());
+			assertEquals("should show expected error message", "Unknown Error: Key is null or zero-length", e.getMsg().getMessage());
+		} 
+	}
+	
+	public void testToXMLInvalidResp1() {
+		try {
+			KVMessage KV;
+			String xmlStr;
+			KV = new KVMessage("resp");
+			//KV.setKey("KEY");
+			//KV.setValue("VAL");
+			//KV.setMessage("MSG");
+			xmlStr = KV.toXML();
+			fail("get request should have failed with the all empty fields");
+		} catch (KVException e) {
+			//System.out.println(e.getMsg().getMessage());
+			assertEquals("should show expected error message", "Unknown Error: Incorrect fields for 'resp' msgType", e.getMsg().getMessage());
+		} 
+	}
+	
+	public void testToXMLInvalidResp2() {
+		try {
+			KVMessage KV;
+			String xmlStr;
+			KV = new KVMessage("resp");
+			KV.setKey("KEY");
+			//KV.setValue("VAL");
+			//KV.setMessage("MSG");
+			xmlStr = KV.toXML();
+			fail("get request should have failed with the empty VAL field");
+		} catch (KVException e) {
+			//System.out.println(e.getMsg().getMessage());
+			assertEquals("should show expected error message", "Unknown Error: Incorrect fields for 'resp' msgType", e.getMsg().getMessage());
+		} 
+	}
+	
+	public void testToXMLInvalidResp3() {
+		try {
+			KVMessage KV;
+			String xmlStr;
+			KV = new KVMessage("resp");
+			//KV.setKey("KEY");
+			KV.setValue("VAL");
+			//KV.setMessage("MSG");
+			xmlStr = KV.toXML();
+			fail("get request should have failed with the empty KEY field");
+		} catch (KVException e) {
+			//System.out.println(e.getMsg().getMessage());
+			assertEquals("should show expected error message", "Unknown Error: Incorrect fields for 'resp' msgType", e.getMsg().getMessage());
+		} 
+	}
+	
+	public void testToXMLInvalidResp4() {
+		try {
+			KVMessage KV;
+			String xmlStr;
+			KV = new KVMessage("resp");
+			KV.setKey("KEY");
+			//KV.setValue("VAL");
+			KV.setMessage("MSG");
+			xmlStr = KV.toXML();
+			fail("get request should have failed with the empty VAL and extra MSG OR with the extra KEY field");
+		} catch (KVException e) {
+			//System.out.println(e.getMsg().getMessage());
+			assertEquals("should show expected error message", "Unknown Error: Incorrect fields for 'resp' msgType", e.getMsg().getMessage());
+		} 
+	}
+	
+	public void testToXMLInvalidResp5() {
+		try {
+			KVMessage KV;
+			String xmlStr;
+			KV = new KVMessage("resp");
+			//KV.setKey("KEY");
+			KV.setValue("VAL");
+			KV.setMessage("MSG");
+			xmlStr = KV.toXML();
+			fail("get request should have failed with the empty KEY and extra MSG OR with the extra VAL field");
+		} catch (KVException e) {
+			//System.out.println(e.getMsg().getMessage());
+			assertEquals("should show expected error message", "Unknown Error: Incorrect fields for 'resp' msgType", e.getMsg().getMessage());
+		} 
+	}
+	
+	public void testToXMLInvalidResp6() {
+		try {
+			KVMessage KV;
+			String xmlStr;
+			KV = new KVMessage("resp");
+			KV.setKey("KEY");
+			KV.setValue("VAL");
+			KV.setMessage("MSG");
+			xmlStr = KV.toXML();
+			fail("get request should have failed with the extra MSG field OR the extra KEY&VAL fields");
+		} catch (KVException e) {
+			//System.out.println(e.getMsg().getMessage());
+			assertEquals("should show expected error message", "Unknown Error: Incorrect fields for 'resp' msgType", e.getMsg().getMessage());
+		} 
+	}
+	
+	public void testSendMessage() {
+		try {
+			KVMessage KV;
+			Socket sock;
+			
+			KV = new KVMessage("putreq");
+			KV.setKey("KEY");
+			KV.setValue("VAL");
+			sock = new Socket();
+			//making socket wrong... stalls on get output stream
+			//KV.sendMessage(sock);
+			//System.out.println(sock.getOutputStream().toString());
 			
 		} catch (Exception e) {
-			
+			//all is well, does not error out, sending message implicitly tested by other junit tests
 		}
 	}
 }
