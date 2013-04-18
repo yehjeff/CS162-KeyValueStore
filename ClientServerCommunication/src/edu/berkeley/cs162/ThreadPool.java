@@ -82,6 +82,8 @@ public class ThreadPool {
 	 * Block until a job is available in the queue and retrieve the job
 	 * @return A runnable task that has to be executed
 	 * @throws InterruptedException 
+	 * 
+	 * removed synchronized
 	 */
 	public Runnable getJob() throws InterruptedException {
 		jobsLock.lock();
