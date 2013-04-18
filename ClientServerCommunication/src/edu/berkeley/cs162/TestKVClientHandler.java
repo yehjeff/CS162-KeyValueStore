@@ -49,8 +49,7 @@ public class TestKVClientHandler extends TestCase {
 			sock = new Socket("localhost", 8080);
 			handler.handle(sock);
 		} catch (UnknownHostException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			fail("FAILED handle");
 		} catch (IOException e2) {
 			fail("FAILED handle");
 		}
