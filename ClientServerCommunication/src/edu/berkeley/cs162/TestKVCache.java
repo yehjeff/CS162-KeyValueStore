@@ -39,6 +39,11 @@ public class TestKVCache extends TestCase {
 		getReturnValue = cache.get("key1");
 		assertTrue(getReturnValue != null);
 		assertTrue(getReturnValue.equals("value1"));
+		getReturnValue = cache.get("key1");
+		assertTrue(getReturnValue != null);
+		assertTrue(getReturnValue.equals("value1"));
+
+
 		
 		//and get should still not work for other keys that were not put'd
 		getReturnValue = cache.get("key2");
@@ -113,6 +118,44 @@ public class TestKVCache extends TestCase {
 		getReturn = cache.get("key6");
 		assertTrue(getReturn != null);
 		assertTrue(getReturn.equals("value6"));
+		
+		cache.put("key3","altvalue3");
+		getReturn = cache.get("key1");
+		assertTrue(getReturn == null);
+		getReturn = cache.get("key2");
+		assertTrue(getReturn == null);
+		getReturn = cache.get("key3");
+		assertTrue(getReturn != null);
+		assertTrue(getReturn.equals("altvalue3"));
+		getReturn = cache.get("key4");
+		assertTrue(getReturn != null);
+		assertTrue(getReturn.equals("value4"));
+		getReturn = cache.get("key5");
+		assertTrue(getReturn != null);
+		assertTrue(getReturn.equals("value5"));
+		getReturn = cache.get("key6");
+		assertTrue(getReturn != null);
+		assertTrue(getReturn.equals("value6"));
+
+		cache.put("key7","value7");
+		getReturn = cache.get("key1");
+		assertTrue(getReturn == null);
+		getReturn = cache.get("key2");
+		assertTrue(getReturn == null);
+		getReturn = cache.get("key3");
+		assertTrue(getReturn != null);
+		assertTrue(getReturn.equals("altvalue3"));
+		getReturn = cache.get("key4");
+		assertTrue(getReturn == null);
+		getReturn = cache.get("key5");
+		assertTrue(getReturn != null);
+		assertTrue(getReturn.equals("value5"));
+		getReturn = cache.get("key6");
+		assertTrue(getReturn != null);
+		assertTrue(getReturn.equals("value6"));
+		getReturn = cache.get("key7");
+		assertTrue(getReturn != null);
+		assertTrue(getReturn.equals("value7"));
 		
 		
 		
