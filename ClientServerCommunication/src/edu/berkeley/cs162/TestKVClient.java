@@ -104,10 +104,13 @@ public class TestKVClient extends TestCase {
 			client.del("key2");					
 			System.out.println("ok");
 			
+			
+			// Getting nonexistent key test, comment out above test to switch
+			/*
 			System.out.println("getting key that doesnt exist, should throw exception");			
 			String value5 = client.get("key2");					
 			System.out.println("returned: " + value);
-			
+			*/
 			closeServer();
 		}
 		catch (KVException e){
