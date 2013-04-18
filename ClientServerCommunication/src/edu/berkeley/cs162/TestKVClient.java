@@ -80,18 +80,33 @@ public class TestKVClient extends TestCase {
 			System.out.println("getting key=fuzzy");			
 			String value = client.get("fuzzy");					
 			System.out.println("returned: " + value);
+			assertEquals("wuzzy", value);
 			
 			System.out.println("getting key=key2");			
 			String value2 = client.get("key2");					
 			System.out.println("returned: " + value2);
+			assertEquals("value2", value2);
+			
+			System.out.println("putting (fuzzy, ursa)");
+			client.put("fuzzy", "ursa");
+			System.out.println("ok");
+			
+			System.out.println("getting key=fuzzy");			
+			String value3 = client.get("fuzzy");					
+			System.out.println("returned: " + value3);
+			assertEquals("ursa", value3);
 			
 			System.out.println("deleting key=key2");			
 			client.del("key2");					
 			System.out.println("ok");
 			
-			System.out.println("deleting key=key2 (again)");			
+			System.out.println("deleting key=key2 (again), should throw exception");			
 			client.del("key2");					
 			System.out.println("ok");
+			
+			System.out.println("getting key that doesnt exist, should throw exception");			
+			String value5 = client.get("key2");					
+			System.out.println("returned: " + value);
 			
 			closeServer();
 		}
