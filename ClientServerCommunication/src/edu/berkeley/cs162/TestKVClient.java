@@ -96,6 +96,7 @@ public class TestKVClient extends TestCase {
 			closeServer();
 		}
 		catch (KVException e){
+			System.out.println("A problem occured");
 			System.out.println(e.getMsg().getMessage());
 		}
 		

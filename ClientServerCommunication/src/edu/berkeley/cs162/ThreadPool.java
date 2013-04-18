@@ -83,7 +83,7 @@ public class ThreadPool {
 	 * @return A runnable task that has to be executed
 	 * @throws InterruptedException 
 	 */
-	public synchronized Runnable getJob() throws InterruptedException {
+	public Runnable getJob() throws InterruptedException {
 		jobsLock.lock();
 		while (jobs.size() == 0) {
 			jobsCondition.await();
