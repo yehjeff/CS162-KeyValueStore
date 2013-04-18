@@ -85,7 +85,7 @@ public class KVStore implements KeyValueInterface {
 			getDelay();
 			String retVal = this.store.get(key);
 			if (retVal == null) {
-			    KVMessage msg = new KVMessage("resp", "key \"" + key + "\" does not exist in store");
+			    KVMessage msg = new KVMessage("resp", "Does not exist");
 			    throw new KVException(msg);
 			}
 			return retVal;
