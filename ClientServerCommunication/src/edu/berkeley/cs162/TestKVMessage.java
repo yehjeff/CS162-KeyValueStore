@@ -1,6 +1,7 @@
 package edu.berkeley.cs162;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.Socket;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -9,6 +10,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import edu.berkeley.cs162.TestKVClient.runServer;
 
 import junit.framework.TestCase;
 
@@ -547,21 +550,49 @@ public class TestKVMessage extends TestCase {
 		} 
 	}
 	
-	public void testSendMessage() {
+	//below re-uses some of the KVClient test code and testing involves using servers and clients as well.
+	//this tests the overall comprehensive project with client and server which would fundamentally not work if
+	//KVMessage's send message did not function properly.
+	String server = "localhost";
+	int port = 8080;			
+	KVServer key_server = new KVServer(100, 10);
+	SocketServer socketserver = new SocketServer("localhost", 8080);
+	NetworkHandler handler = new KVClientHandler(key_server);
+	public class runServer implements Runnable {
+		Thread t;
+		runServer(){
+			t = new Thread(this);
+			t.start();
+		}
+		public void run() {
+			startServer();
+		}
+	}
+	public void startServer() {
+		socketserver.addHandler(handler);
 		try {
-			KVMessage KV;
-			Socket sock;
-			
-			KV = new KVMessage("putreq");
-			KV.setKey("KEY");
-			KV.setValue("VAL");
-			sock = new Socket();
-			//making socket wrong... stalls on get output stream
-			//KV.sendMessage(sock);
-			//System.out.println(sock.getOutputStream().toString());
-			
-		} catch (Exception e) {
-			//all is well, does not error out, sending message implicitly tested by other junit tests
+			socketserver.connect();
+			socketserver.run();
+		}
+		catch (IOException e) {
+			System.out.println("Network Error");
+		}
+	}
+	public void closeServer() {
+		socketserver.stop();
+	}
+	public void testSendMessage() {
+		new runServer();
+		KVClient client = new KVClient(server, port);	
+		try {
+			client.put("KEY", "VAL");	
+			String value = client.get("KEY");					
+			client.del("KEY");	
+			assertEquals("should have sent the request and recieved the correct value", "VAL", value);
+			closeServer();
+		}
+		catch (KVException e){
+			System.out.println(e.getMsg().getMessage());
 		}
 	}
 }
