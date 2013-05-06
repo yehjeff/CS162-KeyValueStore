@@ -114,4 +114,13 @@ public class KVClientHandler implements NetworkHandler {
 			return;
 		}
 	}
+	
+	/*
+	 * Tells the threadpool to shut down and stop accepting new requests.
+	 * 
+	 */
+	@Override
+	public void stop() {
+		threadpool.setShutdownStatus();
+	}
 }
