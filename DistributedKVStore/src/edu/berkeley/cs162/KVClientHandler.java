@@ -61,7 +61,39 @@ public class KVClientHandler implements NetworkHandler {
 		
 		@Override
 		public void run() {
-			// TODO: Implement Me!
+			KVMessage response = null;
+			try {
+				response = new KVMessage("resp");
+				KVMessage request = new KVMessage(client.getInputStream());
+				if (request.getMsgType().equals("getreq")) {
+					String value = tpcMaster.handleGet(request);
+					response.setKey(request.getKey());
+					response.setValue(value);
+					response.sendMessage(client);
+					client.close();
+				} else if (request.getMsgType().equals("putreq")) {
+					tpcMaster.performTPCOperation(request, true);
+					response.setMessage("Success");
+					response.sendMessage(client);
+					client.close();
+				} else if (request.getMsgType().equals("delreq")) {
+					tpcMaster.performTPCOperation(request, false);
+					response.setMessage("Success");
+					response.sendMessage(client);
+					client.close();
+				}
+			} catch (KVException e) {
+				try {
+					response = new KVMessage("resp");
+					response.setMessage(e.getMsg().getMessage());
+					response.sendMessage(client);
+					client.close();
+				} catch (Exception err) {
+					err.printStackTrace();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();		//FIXME: should this be a KVException? In proj3 we just print the stack trace.
+			}
 		}
 		
 		public ClientHandler(Socket client) {
