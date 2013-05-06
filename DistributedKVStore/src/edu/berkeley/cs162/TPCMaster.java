@@ -97,7 +97,12 @@ public class TPCMaster {
 				} catch (Exception e) {
 					//ignore bad messages (like unparseable)
 				} finally {
-					client.close();
+					try {
+						client.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		}
