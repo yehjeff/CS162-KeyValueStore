@@ -147,7 +147,7 @@ public class KVServer implements KeyValueInterface {
 	 * (not null, non-zero length, and not oversized). 
 	 * If it is not valid, then the appropriate KVException is thrown.
 	 */
-	public void checkKey(String key) throws KVException {
+	public static void checkKey(String key) throws KVException {
 		KVMessage exceptMsg = new KVMessage("resp");
 		if (key == null) {
 			exceptMsg.setMessage("Unknown Error: Null Key");
@@ -168,7 +168,7 @@ public class KVServer implements KeyValueInterface {
 	 * (not null, non-zero length, and not oversized).
 	 * If it is not valid, then the appropriate KVException is thrown.
 	 */
-	public void checkValue(String value) throws KVException {
+	public static void checkValue(String value) throws KVException {
 		KVMessage exceptMsg = new KVMessage("resp");
 		if (value == null) {
 			exceptMsg.setMessage("Unknown Error: Null Value");

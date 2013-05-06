@@ -34,10 +34,13 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TPCMaster {
-	
+
 	/**
 	 * Implements NetworkHandler to handle registration requests from 
 	 * SlaveServers.
@@ -46,6 +49,7 @@ public class TPCMaster {
 	private class TPCRegistrationHandler implements NetworkHandler {
 
 		private ThreadPool threadpool = null;
+
 
 		public TPCRegistrationHandler() {
 			// Call the other constructor
@@ -57,12 +61,17 @@ public class TPCMaster {
 		}
 
 		@Override
-		public void handle(Socket client) throws IOException {
-			// implement me
+		public void handle(Socket client) throws IOException {    
+			try {
+				threadpool.addToQueue(new RegistrationHandler(client));
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		
+
 		private class RegistrationHandler implements Runnable {
-			
+
 			private Socket client = null;
 
 			public RegistrationHandler(Socket client) {
@@ -70,12 +79,32 @@ public class TPCMaster {
 			}
 
 			@Override
-			public void run() {
-				// implement me
+			public void run() {    
+				try {
+					KVMessage registerMsg = new KVMessage(client.getInputStream());
+					isParseable(registerMsg);     //throws KVException if not parsable
+					if (registerMsg.getMsgType().equals("register")) {
+						slaveServerIDs.add(registerMsg.slaveID);
+						SlaveInfo newEntry = new SlaveInfo(registerMsg.getMessage());
+						slaveInfoMap.put(registerMsg.slaveID, newEntry);
+					}
+					KVMessage ackMsg = new KVMessage("resp", "Successfully registered " + registerMsg.getMessage());
+					ackMsg.sendMessage(client);
+				} catch (Exception e) {
+					//ignore bad messages (like unparseable)
+				} finally {
+					client.close();
+				}
 			}
+		}
+
+		@Override
+		public void stop() {
+			// TODO Auto-generated method stub
+
 		}	
 	}
-	
+
 	/**
 	 *  Data structure to maintain information about SlaveServers
 	 *
@@ -93,39 +122,70 @@ public class TPCMaster {
 		 * @param slaveInfo as "SlaveServerID@HostName:Port"
 		 * @throws KVException
 		 */
-		public SlaveInfo(String slaveInfo) throws KVException {
-			// implement me
+		public SlaveInfo(String slaveInfo) throws KVException {  	
+			// implement me  
+			String delims = "[@:]"; //delim by @ or :
+			String[] tokens = slaveInfo.split(delims);
+			String slaveID = tokens[0];
+			String hostName = tokens[1];
+			String port = tokens[2];
 		}
-		
+
 		public long getSlaveID() {
 			return slaveID;
 		}
-		
+
 		public Socket connectHost() throws KVException {
-		    // TODO: Optional Implement Me!
-			return null;
+		    // TODO: Optional Implement Me!    
+			try {
+				Socket sock = new Socket(this.hostName, this.port);		//should it be this.server????
+				return sock;
+			} catch (UnknownHostException u) {
+				KVMessage exceptMsg = new KVMessage("resp");
+				exceptMsg.setMessage("Network Error: Could not connect");
+				throw new KVException(exceptMsg);
+			} catch (IOException e) {
+				KVMessage exceptMsg = new KVMessage("resp");
+				exceptMsg.setMessage("Network Error: Could not create socket");
+				throw new KVException(exceptMsg);
+			}
+			//return null;
 		}
-		
+
 		public void closeHost(Socket sock) throws KVException {
 		    // TODO: Optional Implement Me!
+			if (sock == null) {
+				KVMessage exceptMsg = new KVMessage("resp");
+				exceptMsg.setMessage("Unknown Error: no socket given");
+				throw new KVException(exceptMsg);
+			}
+			try {
+				sock.close();
+			} catch (IOException e) {
+				KVMessage exceptMsg = new KVMessage("resp");
+				exceptMsg.setMessage("Unknown Error: could not close connection");
+		        throw new KVException(exceptMsg);
+			}
 		}
 	}
-	
+
 	// Timeout value used during 2PC operations
 	private static final int TIMEOUT_MILLISECONDS = 5000;
-	
+
 	// Cache stored in the Master/Coordinator Server
 	private KVCache masterCache = new KVCache(100, 10);
-	
+
 	// Registration server that uses TPCRegistrationHandler
 	private SocketServer regServer = null;
 
 	// Number of slave servers in the system
 	private int numSlaves = -1;
-	
+
 	// ID of the next 2PC operation
 	private Long tpcOpId = 0L;
-	
+
+	private TreeSet<Long> slaveServerIDs;
+	private HashMap<Long, SlaveInfo> slaveInfoMap;
 	/**
 	 * Creates TPCMaster
 	 * 
@@ -139,7 +199,7 @@ public class TPCMaster {
 		// Create registration server
 		regServer = new SocketServer("localhost", 9090);
 	}
-	
+
 	/**
 	 * Calculates tpcOpId to be used for an operation. In this implementation
 	 * it is a long variable that increases by one for each 2PC operation. 
@@ -150,16 +210,32 @@ public class TPCMaster {
 		tpcOpId++;
 		return tpcOpId.toString();		
 	}
-	
+
 	/**
 	 * Start registration server in a separate thread
 	 */
 	public void run() {
 		AutoGrader.agTPCMasterStarted();
-		// implement me
+		try {
+			// implement me
+			regServer.connect();
+			regServer.addHandler(new TPCRegistrationHandler(numSlaves));
+			Thread regThread = new Thread(new Runnable(){
+				public void run() {
+					try {
+						regServer.run();
+					} catch (IOException e){
+						e.printStackTrace();
+					}
+				}
+			});
+			regThread.start();
+		} catch (IOException e){
+			e.printStackTrace();
+		}
 		AutoGrader.agTPCMasterFinished();
 	}
-	
+
 	/**
 	 * Converts Strings to 64-bit longs
 	 * Borrowed from http://stackoverflow.com/questions/1660501/what-is-a-good-64bit-hash-function-in-java-for-textual-strings
@@ -177,7 +253,7 @@ public class TPCMaster {
 		}
 		return h;
 	}
-	
+
 	/**
 	 * Compares two longs as if they were unsigned (Java doesn't have unsigned data types except for char)
 	 * Borrowed from http://www.javamex.com/java_equivalents/unsigned_arithmetic.shtml
@@ -188,7 +264,7 @@ public class TPCMaster {
 	private boolean isLessThanUnsigned(long n1, long n2) {
 		return (n1 < n2) ^ ((n1 < 0) != (n2 < 0));
 	}
-	
+
 	private boolean isLessThanEqualUnsigned(long n1, long n2) {
 		return isLessThanUnsigned(n1, n2) || n1 == n2;
 	}	
@@ -201,11 +277,13 @@ public class TPCMaster {
 	private SlaveInfo findFirstReplica(String key) {
 		// 64-bit hash of the key
 		long hashedKey = hashTo64bit(key.toString());
-
-		// implement me
-		return null;
+		Long firstReplicaID = slaveServerIDs.ceiling(hashedKey);
+		if (firstReplicaID == null){
+			firstReplicaID = slaveServerIDs.ceiling(Long.MIN_VALUE);
+		}
+		return slaveInfoMap.get(firstReplicaID);
 	}
-	
+
 	/**
 	 * Find the successor of firstReplica to put the second replica
 	 * @param firstReplica
@@ -213,9 +291,13 @@ public class TPCMaster {
 	 */
 	private SlaveInfo findSuccessor(SlaveInfo firstReplica) {
 		// implement me
-		return null;
+		Long successorID = slaveServerIDs.higher(firstReplica.getSlaveID());
+		if (successorID == null){
+			successorID = slaveServerIDs.ceiling(Long.MIN_VALUE);
+		}
+		return slaveInfoMap.get(successorID);
 	}
-	
+
 	/**
 	 * Synchronized method to perform 2PC operations one after another
 	 * You will need to remove the synchronized declaration if you wish to attempt the extra credit
@@ -226,9 +308,101 @@ public class TPCMaster {
 	 */
 	public synchronized void performTPCOperation(KVMessage msg, boolean isPutReq) throws KVException {
 		AutoGrader.agPerformTPCOperationStarted(isPutReq);
-		// implement me
-		AutoGrader.agPerformTPCOperationFinished(isPutReq);
-		return;
+		try {
+			// implement me
+			String key = msg.getKey();
+			KVServer.checkKey(key);
+			String value = null;
+			if (isPutReq){
+				value = msg.getValue();
+				KVServer.checkValue(value);
+			}
+
+			SlaveInfo info1 = findFirstReplica(key);
+			SlaveInfo info2 = findSuccessor(info1);
+			Long id1 = info1.getSlaveID();
+			Long id2 = info2.getSlaveID();
+
+			Socket slaveSocket1, slaveSocket2;
+			KVMessage exceptionMsg;
+			String currentTPCOpId = getNextTpcOpId();
+			msg.setTpcOpId(currentTPCOpId);
+			masterCache.getWriteLock(key).lock();
+
+			try{
+				/* PHASE 1 */
+				slaveSocket1 = info1.connectHost();
+				slaveSocket2 = info2.connectHost();
+				slaveSocket1.setSoTimeout(TIMEOUT_MILLISECONDS);
+				slaveSocket2.setSoTimeout(TIMEOUT_MILLISECONDS);
+				msg.sendMessage(slaveSocket1);
+				msg.sendMessage(slaveSocket2);
+				KVMessage responseMsg1, responseMsg2;
+				try{
+					responseMsg1 = new KVMessage(slaveSocket1.getInputStream());
+					responseMsg2 = new KVMessage(slaveSocket2.getInputStream());
+				} catch (KVException e){
+					/* PHASE 2 - ABORT due to timeout */
+					info1.closeHost(slaveSocket1);
+					info2.closeHost(slaveSocket2);
+					KVMessage commitMsg = new KVMessage("abort");
+					sendDecision(id1,commitMsg);
+					sendDecision(id2,commitMsg);
+					exceptionMsg = new KVMessage("resp", "Unknown Error: slave server timed out");
+					throw new KVException (msg);
+				}
+
+				if (responseMsg1.getMsgType().equals("ready") && responseMsg2.getMsgType().equals("ready")){
+					/* PHASE 2 - SUCCESS */
+					KVMessage commitMsg = new KVMessage("commit");
+					sendDecision(id1, commitMsg);
+					sendDecision(id2, commitMsg);
+					if (isPutReq){
+						masterCache.put(key,value);
+					} else {
+						masterCache.del(key);
+					}
+				} else {
+					/* PHASE 2 - ABORT because a slave voted abort */
+					KVMessage abortMsg = new KVMessage("abort");
+					sendDecision(id1, abortMsg);
+					sendDecision(id2, abortMsg);
+					exceptionMsg = new KVMessage ("resp", "Does not exist");
+					throw new KVException(msg);
+				}
+				info1.closeHost(slaveSocket1);
+				info2.closeHost(slaveSocket2);
+			} finally {
+				masterCache.getWriteLock(key).unlock();
+			}
+		} catch (Exception e){
+			e.printStackTrace();
+		} finally {
+			AutoGrader.agPerformTPCOperationFinished(isPutReq);
+		}
+	}
+
+	private void sendDecision(Long slaveID, KVMessage decision){
+		KVMessage ackMsg;
+		try {
+			while (true){
+				SlaveInfo info = slaveInfoMap.get(slaveID);
+				Socket slaveSocket = info.connectHost();
+				slaveSocket.setSoTimeout(TIMEOUT_MILLISECONDS);
+				decision.sendMessage(slaveSocket);
+				try {
+					ackMsg = new KVMessage(slaveSocket.getInputStream());
+				} catch (KVException e) {
+					info.closeHost(slaveSocket);
+					continue;
+				}
+
+				if (ackMsg.getMsgType().equals("ack"))
+					return;
+			}
+		} catch (Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -245,8 +419,87 @@ public class TPCMaster {
 	 */
 	public String handleGet(KVMessage msg) throws KVException {
 		AutoGrader.aghandleGetStarted();
-		// implement me
-		AutoGrader.aghandleGetFinished();
+		try {
+			// implement me
+			Socket slaveSocket;
+			String key, value;
+			SlaveInfo info1, info2;
+			key = msg.getKey();
+			KVServer.checkKey(key);
+			KVMessage responseMsg, exceptionMsg;
+			info1 = findFirstReplica(key);
+			masterCache.getWriteLock(key).lock();
+
+			value = masterCache.get(key);
+			if (value == null)
+				return value;
+
+			slaveSocket = info1.connectHost();
+			slaveSocket.setSoTimeout(TIMEOUT_MILLISECONDS);
+			msg.sendMessage(slaveSocket);
+			try {
+				responseMsg = new KVMessage(slaveSocket.getInputStream());
+				if (responseMsg.getMessage().equals("Does not exist")){
+					exceptionMsg = new KVMessage("resp", "Does not exist");
+					throw new KVException(exceptionMsg);
+				}
+				value = responseMsg.getValue();
+				masterCache.put(key,value);
+				info1.closeHost(slaveSocket);
+				return value;
+			}catch (KVException e1){
+
+				key = msg.getKey();
+				info2 = findSuccessor(info1);
+				slaveSocket = info2.connectHost();
+
+				slaveSocket.setSoTimeout(TIMEOUT_MILLISECONDS);
+				msg.sendMessage(slaveSocket);
+				try {
+					responseMsg = new KVMessage(slaveSocket.getInputStream());
+					if (responseMsg.getMessage().equals("Does not exist")){
+						exceptionMsg = new KVMessage("resp", "Does not exist");
+						throw new KVException(exceptionMsg);
+					}
+					value = responseMsg.getValue();
+					masterCache.put(key, value);
+					return value;
+				} catch (KVException e2){
+					exceptionMsg = new KVMessage("resp","@" + info1.getSlaveID() + ":=" + e1.getMsg().getMessage() + "@" + info2.getSlaveID() + "\n:=" + e2.getMsg().getMessage());
+					throw new KVException(exceptionMsg);
+				}
+			}finally {
+				masterCache.getWriteLock(key).unlock();
+			}
+
+		} catch (Exception e){
+			e.printStackTrace();
+		} finally {
+			AutoGrader.aghandleGetFinished();
+		}
 		return null;
 	}
+
+	/**
+	 * DOES PARSING STUFF
+	 * 
+	 * @param msg Registration message to parse
+	 * @throws KVException
+	 */
+	private static void isParseable(KVMessage msg) throws KVException {
+		String regMsg = msg.getMessage();
+		String pattern = "[0-9]+@[A-Za-z]+:[0-9]+";
+		Pattern p = Pattern.compile(pattern);
+	    Matcher m = p.matcher(regMsg);
+
+	    if (!m.matches()) {
+			KVMessage exceptMsg = new KVMessage("resp");
+			exceptMsg.setMessage("Registration Error: Received unparseable slave information");
+			throw new KVException(exceptMsg);
+	    }
+	}
+
+	public void stop(){
+	}
+
 }

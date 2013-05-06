@@ -82,4 +82,10 @@ public class KVClientHandler implements NetworkHandler {
 			return;
 		}
 	}
+
+	@Override
+	public void stop() {
+		// TODO Auto-generated method stub
+		
+	}
 }

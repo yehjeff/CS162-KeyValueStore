@@ -215,4 +215,10 @@ public class TPCMasterHandler implements NetworkHandler {
 		master.close();
 		AutoGrader.agRegistrationFinished(slaveID);
 	}
+
+	@Override
+	public void stop() {
+		// TODO Auto-generated method stub
+		
+	}
 }
