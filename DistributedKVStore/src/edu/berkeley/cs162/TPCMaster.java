@@ -35,6 +35,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TPCMaster {
 	
@@ -306,11 +308,15 @@ public class TPCMaster {
 	 * @throws KVException
 	 */
 	private static void isParseable(KVMessage msg) throws KVException {
-	    //make sure that before the “@” there are numbers
-	    //after the “@” is a string of characters?? followed by a “:”
-	    //after the “:” are numbers
-	    //if all of these conditions aren’t satisfied, throw a KVException
-		//with the message, "Registration Error: Received unparseable
-		//slave information"
+		String regMsg = msg.getMessage();
+		String pattern = "[0-9]+@[A-Za-z]+:[0-9]+";
+		Pattern p = Pattern.compile(pattern);
+	    Matcher m = p.matcher(regMsg);
+
+	    if (!m.matches()) {
+			KVMessage exceptMsg = new KVMessage("resp");
+			exceptMsg.setMessage("Registration Error: Received unparseable slave information");
+			throw new KVException(exceptMsg);
+	    }
 	}
 }
