@@ -83,10 +83,14 @@ public class TPCMaster {
 				try {
 					KVMessage registerMsg = new KVMessage(client.getInputStream());
 					isParseable(registerMsg);     //throws KVException if not parsable
+					String delims = "[@]";
+					String[] tokens = registerMsg.getMessage().split(delims);
+					Long slaveID = Long.parseLong(tokens[0]);
+					
 					if (registerMsg.getMsgType().equals("register")) {
-						slaveServerIDs.add(registerMsg.slaveID);
+						slaveServerIDs.add(slaveID);
 						SlaveInfo newEntry = new SlaveInfo(registerMsg.getMessage());
-						slaveInfoMap.put(registerMsg.slaveID, newEntry);
+						slaveInfoMap.put(slaveID, newEntry);
 					}
 					KVMessage ackMsg = new KVMessage("resp", "Successfully registered " + registerMsg.getMessage());
 					ackMsg.sendMessage(client);
