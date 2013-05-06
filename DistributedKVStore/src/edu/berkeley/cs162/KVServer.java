@@ -62,8 +62,6 @@ public class KVServer implements KeyValueInterface {
 	public void put(String key, String value) throws KVException {
 		// Must be called before anything else
 		AutoGrader.agKVServerPutStarted(key, value);
-
-		// TODO: implement me
 		try {
 
 			checkKey(key);
@@ -84,8 +82,6 @@ public class KVServer implements KeyValueInterface {
 	public String get (String key) throws KVException {
 		// Must be called before anything else
 		AutoGrader.agKVServerGetStarted(key);
-
-		// TODO: implement me
 		try {
 
 			checkKey(key);
@@ -117,7 +113,6 @@ public class KVServer implements KeyValueInterface {
 	public void del (String key) throws KVException {
 		// Must be called before anything else
 		AutoGrader.agKVServerDelStarted(key);
-		// TODO: implement me
 		try {
 			
 			checkKey(key);
@@ -185,7 +180,16 @@ public class KVServer implements KeyValueInterface {
 	}
 	public boolean hasKey (String key) throws KVException {
 		// TODO: optional implement me
-		
-		return false;
+		try {
+			dataStore.get(key);
+			return true;
+		} catch (KVException e) {
+			//different from desDoc, adding if-else to prevent returning false for other KVExceptions
+			if (e.getMsg().getMessage().equals("Does not exist")) {
+				return false;
+			} else {
+				throw e;
+			}
+		}
 	}
 }
