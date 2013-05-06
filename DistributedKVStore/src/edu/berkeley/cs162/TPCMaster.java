@@ -57,8 +57,13 @@ public class TPCMaster {
 		}
 
 		@Override
-		public void handle(Socket client) throws IOException {
-			// implement me
+		public void handle(Socket client) throws IOException {    
+			try {
+				threadpool.addToQueue(new RegistrationHandler(client));
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		private class RegistrationHandler implements Runnable {
@@ -70,8 +75,22 @@ public class TPCMaster {
 			}
 
 			@Override
-			public void run() {
-				// implement me
+			public void run() {    
+				try {
+					KVMessage registerMsg = new KVMessage(client.getInputStream());
+					isParseable(registerMsg);     //throws KVException if not parsable
+					if (registerMsg.getMsgType().equals("register")) {
+						slaveServerIDs.add(registerMsg.slaveID);
+						SlaveInfo newEntry = new SlaveInfo(registerMsg.getMessage());
+						slaveInfoMap.put(registerMsg.slaveID, newEntry);
+					}
+					KVMessage ackMsg = new KVMessage("resp", "Successfully registered " + registerMsg.getMessage());
+					ackMsg.sendMessage(client);
+				} catch (Exception e) {
+					//ignore bad messages (like unparseable)
+				} finally {
+					client.close();
+				}
 			}
 		}	
 	}
@@ -93,8 +112,13 @@ public class TPCMaster {
 		 * @param slaveInfo as "SlaveServerID@HostName:Port"
 		 * @throws KVException
 		 */
-		public SlaveInfo(String slaveInfo) throws KVException {
-			// implement me
+		public SlaveInfo(String slaveInfo) throws KVException {  	
+			// implement me  
+			String delims = "[@:]"; //delim by @ or :
+			String[] tokens = slaveInfo.split(delims);
+			String slaveID = tokens[0];
+			String hostName = tokens[1];
+			String port = tokens[2];
 		}
 		
 		public long getSlaveID() {
@@ -102,12 +126,36 @@ public class TPCMaster {
 		}
 		
 		public Socket connectHost() throws KVException {
-		    // TODO: Optional Implement Me!
-			return null;
+		    // TODO: Optional Implement Me!    
+			try {
+				Socket sock = new Socket(this.hostName, this.port);		//should it be this.server????
+				return sock;
+			} catch (UnknownHostException u) {
+				KVMessage exceptMsg = new KVMessage("resp");
+				exceptMsg.setMessage("Network Error: Could not connect");
+				throw new KVException(exceptMsg);
+			} catch (IOException e) {
+				KVMessage exceptMsg = new KVMessage("resp");
+				exceptMsg.setMessage("Network Error: Could not create socket");
+				throw new KVException(exceptMsg);
+			}
+			//return null;
 		}
 		
 		public void closeHost(Socket sock) throws KVException {
 		    // TODO: Optional Implement Me!
+			if (sock == null) {
+				KVMessage exceptMsg = new KVMessage("resp");
+				exceptMsg.setMessage("Unknown Error: no socket given");
+				throw new KVException(exceptMsg);
+			}
+			try {
+				sock.close();
+			} catch (IOException e) {
+				KVMessage exceptMsg = new KVMessage("resp");
+				exceptMsg.setMessage("Unknown Error: could not close connection");
+		        throw new KVException(exceptMsg);
+			}
 		}
 	}
 	
@@ -248,5 +296,21 @@ public class TPCMaster {
 		// implement me
 		AutoGrader.aghandleGetFinished();
 		return null;
+	}
+	
+
+	/**
+	 * DOES PARSING STUFF
+	 * 
+	 * @param msg Registration message to parse
+	 * @throws KVException
+	 */
+	private static void isParseable(KVMessage msg) throws KVException {
+	    //make sure that before the “@” there are numbers
+	    //after the “@” is a string of characters?? followed by a “:”
+	    //after the “:” are numbers
+	    //if all of these conditions aren’t satisfied, throw a KVException
+		//with the message, "Registration Error: Received unparseable
+		//slave information"
 	}
 }

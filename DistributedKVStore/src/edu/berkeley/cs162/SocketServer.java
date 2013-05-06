@@ -91,7 +91,13 @@ public class SocketServer {
 	public void connect() throws IOException {
 		// TODO: implement me
 		try {
-			server = new ServerSocket(port);
+			//server = new ServerSocket(port);    
+			if (port <= 0) {
+				server = new ServerSocket(0);
+				port = server.getLocalPort();
+			} else {
+				server = new ServerSocket(port);
+			}
 		} catch (IOException e) {
 			throw e;
 		}
