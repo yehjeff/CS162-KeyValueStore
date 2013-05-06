@@ -113,6 +113,11 @@ public class KVMessage implements Serializable{
 	    } // ignore close
 	}
 	
+	//TODO: new types abort/ready/commit/ack
+	//TODO: add catch for inputstream timeout and throw the right kvexception
+	//TODO: input stream constructor needs to be able to read TPCOpID
+	//TODO: toXML needs to work with new msgTypes as well as the TPCOpID field
+	
 	/***
 	 * 
 	 * @param msgType
