@@ -30,11 +30,21 @@
  */
 package edu.berkeley.cs162;
 
+
+import java.util.*;
+import java.util.concurrent.locks.*;
+
 public class ThreadPool {
 	/**
 	 * Set of threads in the threadpool
+	 * More instance variables
 	 */
-	protected Thread threads[] = null;
+	protected Thread threads[] = null;	   //was protected, temporarily pubic
+	
+	private LinkedList<Runnable> jobs;  //temporary for testing
+	private Lock jobsLock;
+	private Condition jobsCondition;
+	private Boolean shutdown;
 
 	/**
 	 * Initialize the number of threads required in the threadpool. 
@@ -43,7 +53,15 @@ public class ThreadPool {
 	 */
 	public ThreadPool(int size)
 	{      
-	    // TODO: implement me
+		shutdown = false;
+		jobsLock = new ReentrantLock();
+		jobsCondition = jobsLock.newCondition();
+		jobs = new LinkedList<Runnable>();
+		threads = new Thread[size];
+		for (int i = 0; i < size; i++){
+			threads[i] = new WorkerThread(this);
+			threads[i].start();							// also temporary
+		}
 	}
 
 	/**
@@ -54,17 +72,35 @@ public class ThreadPool {
 	 */
 	public void addToQueue(Runnable r) throws InterruptedException
 	{
-	      // TODO: implement me
+		jobsLock.lock();
+		jobs.add(r);
+		jobsCondition.signal();
+		jobsLock.unlock();
 	}
 	
 	/** 
 	 * Block until a job is available in the queue and retrieve the job
 	 * @return A runnable task that has to be executed
 	 * @throws InterruptedException 
+	 * 
+	 * removed synchronized
 	 */
-	public synchronized Runnable getJob() throws InterruptedException {
-	      // TODO: implement me
-	    return null;
+	public Runnable getJob() throws InterruptedException {
+		jobsLock.lock();
+		while (jobs.size() == 0) {
+			jobsCondition.await();
+		}
+		Runnable newJob = jobs.poll();
+		jobsLock.unlock();
+		return newJob;
+	}
+	
+	public Boolean getShutdownStatus() {
+		return this.shutdown;
+	}
+	
+	public void setShutdownStatus() {
+		this.shutdown = true;
 	}
 }
 
@@ -77,9 +113,12 @@ class WorkerThread extends Thread {
 	 * 
 	 * @param o the thread pool 
 	 */
+	ThreadPool threadPool;
+	
 	WorkerThread(ThreadPool o)
 	{
-	     // TODO: implement me
+		super();
+		this.threadPool = o;
 	}
 
 	/**
@@ -87,6 +126,14 @@ class WorkerThread extends Thread {
 	 */
 	public void run()
 	{
-	      // TODO: implement me
+		try {
+			while (!this.threadPool.getShutdownStatus()) {
+				threadPool.getJob().run();
+			}
+			threadPool.getJob().run(); // runs final job
+		}
+		catch (InterruptedException e) {
+			//throw e
+		}
 	}
 }

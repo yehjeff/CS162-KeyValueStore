@@ -31,13 +31,17 @@
  */
 package edu.berkeley.cs162;
 
-import java.net.Socket;
+//import java.net.Socket;
+import java.net.*;
+import java.io.*;
 
 
 /**
  * This class is used to communicate with (appropriately marshalling and unmarshalling) 
  * objects implementing the {@link KeyValueInterface}.
  *
+ * @param <K> Java Generic type for the Key
+ * @param <V> Java Generic type for the Value
  */
 public class KVClient implements KeyValueInterface {
 
@@ -47,6 +51,8 @@ public class KVClient implements KeyValueInterface {
 	/**
 	 * @param server is the DNS reference to the Key-Value server
 	 * @param port is the port on which the Key-Value server is listening
+	 * 
+	 * Filled in, no tests written yet
 	 */
 	public KVClient(String server, int port) {
 		this.server = server;
@@ -54,30 +60,122 @@ public class KVClient implements KeyValueInterface {
 	}
 	
 	private Socket connectHost() throws KVException {
-	    // TODO: Implement Me!  
-		return null;
+		try {
+			Socket sock = new Socket(this.server, this.port);
+			return sock;
+		}
+		catch (UnknownHostException u){
+				KVMessage exceptMsg = new KVMessage("resp");
+				exceptMsg.setMessage("Network Error: Could not connect");
+				throw new KVException(exceptMsg);
+			}
+		catch (IOException e){
+				KVMessage exceptMsg = new KVMessage("resp");
+				exceptMsg.setMessage("Network Error: Could not create socket");
+				throw new KVException(exceptMsg);
+			}
 	}
+
 	
 	private void closeHost(Socket sock) throws KVException {
-	    // TODO: Implement Me!
+		if (sock == null){
+			KVMessage exceptMsg = new KVMessage("resp");
+			exceptMsg.setMessage("Unknown Error: no socket given");
+			throw new KVException(exceptMsg);
+		}
+		try {
+			sock.close();
+			}
+		catch (IOException e){
+			KVMessage exceptMsg = new KVMessage("resp");
+			exceptMsg.setMessage("Unknown Error: could not close connection");
+			throw new KVException(exceptMsg);
+		}
+
 	}
 	
 	public void put(String key, String value) throws KVException {
-	    // TODO: Implement Me from Project 3
-	    return;
+		try{
+			Socket sock = connectHost();
+			KVMessage msg = new KVMessage("putreq");
+			msg.setKey(key);
+			msg.setValue(value);
+			msg.sendMessage(sock);
+			InputStream inputStream = sock.getInputStream(); 
+			KVMessage responseMsg = new KVMessage(inputStream);
+			closeHost(sock);
+			KVMessage exceptMsg = new KVMessage("resp");
+			exceptMsg.setMessage(responseMsg.getMessage());
+			
+			// Throw an exception if the command wasn't successful
+			// changed to use .equals()
+			if (!exceptMsg.getMessage().equals("Success") ){
+			
+				throw new KVException(exceptMsg);
+			}
+		}
+		catch (IOException f){
+			KVMessage exceptMsg = new KVMessage("resp");
+			exceptMsg.setMessage("Network Error: could not send data");
+			throw new KVException(exceptMsg);
+		}
+		catch (KVException e){
+			throw e;
+		}
 	}
 
 	public String get(String key) throws KVException {
-		// TODO: Implement Me from Project 3
-	    return null;
+		try{
+			Socket sock = connectHost();
+			KVMessage msg = new KVMessage("getreq");
+			msg.setKey(key);
+			msg.sendMessage(sock);
+			InputStream inputStream = sock.getInputStream();
+			KVMessage responseMsg = new KVMessage(inputStream);
+			closeHost(sock);
+			KVMessage exceptMsg = new KVMessage("resp");
+			exceptMsg.setMessage(responseMsg.getMessage());
+			
+			if (responseMsg.getValue() == null) {
+				throw new KVException(exceptMsg);
+			}
+			else return responseMsg.getValue();
+			
+		}
+		catch (IOException f){
+			KVMessage exceptMsg = new KVMessage("resp");
+			exceptMsg.setMessage("Network Error: could not recieve data");
+			throw new KVException(exceptMsg);
+		}
+		catch (KVException e){
+			throw e;
+		}
 	}
 	
 	public void del(String key) throws KVException {
-		// TODO: Implement Me from Project 3
-		return;
+		try{
+			Socket sock = connectHost();
+			KVMessage msg = new KVMessage("delreq");
+			msg.setKey(key);
+			msg.sendMessage(sock);
+			InputStream inputStream = sock.getInputStream();         
+			KVMessage responseMsg = new KVMessage(inputStream);
+			closeHost(sock);
+			KVMessage exceptMsg = new KVMessage("resp");
+			exceptMsg.setMessage(responseMsg.getMessage());
+			
+			// Throw an exception if the command wasn't successful
+			if (!exceptMsg.getMessage().equals("Success") ){
+				throw new KVException(exceptMsg);
+			}
+		}
+		catch (IOException f){
+			KVMessage exceptMsg = new KVMessage("resp");
+			exceptMsg.setMessage("Network Error: could not send data");
+			throw new KVException(exceptMsg);
+		}
+		catch (KVException e){
+			throw e;
+		}
 	}	
-	
-	public void ignoreNext() throws KVException {
-	    // TODO: Implement Me!
-	}
 }

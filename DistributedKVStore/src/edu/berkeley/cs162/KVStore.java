@@ -30,8 +30,24 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package edu.berkeley.cs162;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.StringWriter;
 import java.util.Dictionary;
+import java.util.Enumeration;
 import java.util.Hashtable;
+import javax.xml.parsers.*;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 
 /**
@@ -69,7 +85,7 @@ public class KVStore implements KeyValueInterface {
 			getDelay();
 			String retVal = this.store.get(key);
 			if (retVal == null) {
-			    KVMessage msg = new KVMessage("resp", "key \"" + key + "\" does not exist in store");
+			    KVMessage msg = new KVMessage("resp", "Does not exist");
 			    throw new KVException(msg);
 			}
 			return retVal;
@@ -85,10 +101,6 @@ public class KVStore implements KeyValueInterface {
 			delDelay();
 			if(key != null)
 				this.store.remove(key);
-			else {
-			    KVMessage msg = new KVMessage("resp", "key \"" + key + "\" does not exist in store");
-			    throw new KVException(msg);
-			}
 		} finally {
 			AutoGrader.agStoreDelFinished(key);
 		}
@@ -106,16 +118,88 @@ public class KVStore implements KeyValueInterface {
 		AutoGrader.agStoreDelay();
 	}
 	
-    public String toXML() throws KVException {
+    public String toXML() {
         // TODO: implement me
-        return null;
+    	
+		try {
+			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			
+			Document doc = builder.newDocument();
+			doc.setXmlStandalone(true);
+			Element KVStoreElement = doc.createElement("KVStore");
+			doc.appendChild(KVStoreElement);
+			Enumeration<String> keysEnumerator = this.store.keys();
+			for (int i = 0; i < store.size(); i++){
+				Element KVPairElement = doc.createElement("KVPair");
+				KVStoreElement.appendChild(KVPairElement);
+				
+				String key = keysEnumerator.nextElement();
+				Element keyElement = doc.createElement("Key");
+				keyElement.appendChild(doc.createTextNode(key));
+				KVPairElement.appendChild(keyElement);
+				
+				String value = store.get(key);
+				Element valueElement = doc.createElement("Value");
+				valueElement.appendChild(doc.createTextNode(value));
+				KVPairElement.appendChild(valueElement);
+				
+			}
+			
+			StringWriter writer = new StringWriter();
+			Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+			transformer.setOutputProperty(OutputKeys.METHOD, "xml");
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+			transformer.transform(new DOMSource(doc), new StreamResult(writer));
+			return writer.toString();
+			
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+
     }        
 
-    public void dumpToFile(String fileName) throws KVException {
+    public void dumpToFile(String fileName) {
         // TODO: implement me
+    	try{
+    		BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
+    		writer.write(this.toXML());
+    		writer.close();
+    	} catch (Exception e){
+    		System.err.println("Could not dump store to file");
+    		e.printStackTrace();
+    	}
     }
 
-    public void restoreFromFile(String fileName) throws KVException{
+    /**
+     * Replaces the contents of the store with the contents of a file
+     * written by dumpToFile; the previous contents of the store are lost.
+     * @param fileName the file to be read.
+     */
+    public void restoreFromFile(String fileName) {
         // TODO: implement me
+       	try{
+    		File xmlFile = new File(fileName);
+    		DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+    		Document doc = builder.parse(xmlFile);
+    		
+    		this.resetStore();
+    		
+    		NodeList KVPairList = doc.getElementsByTagName("KVPair");
+    		
+    		for (int i = 0; i < KVPairList.getLength(); i++){
+    			Element KVPairElement = (Element) KVPairList.item(i);
+    			String key = KVPairElement.getElementsByTagName("Key").item(0).getTextContent();
+    			String value = KVPairElement.getElementsByTagName("Value").item(0).getTextContent();
+    			this.store.put(key, value);
+    		}
+    	} catch(Exception e){
+    		System.out.println("KVStore.restoreFromFile(): Unable to read xml file");
+    	}
     }
 }
