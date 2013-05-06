@@ -85,68 +85,113 @@ public class TPCMasterHandler implements NetworkHandler {
 		public void run() {
 			// Receive message from client
 			// Implement me
-			KVMessage msg = null;
-
-			// Parse the message and do stuff 
-			String key = msg.getKey();
+			try {
+				KVMessage msg = new KVMessage(client.getInputStream());
+				if (tpcLog.hasInterruptedTpcOperation()){
+					originalMessage = tpcLog.getInterruptedTpcOperation();
+				}
+				// Parse the message and do stuff 
+				String key = msg.getKey();
+				
+				if (msg.getMsgType().equals("putreq")) {
+					handlePut(msg, key);
+				}
+				else if (msg.getMsgType().equals("getreq")) {
+					handleGet(msg, key);
+				}
+				else if (msg.getMsgType().equals("delreq")) {
+					handleDel(msg, key);
+				} 
+				else if (msg.getMsgType().equals("ignoreNext")) {
+					// Set ignoreNext to true. PUT and DEL handlers know what to do.
+					// Implement me
+					ignoreNext = true;
+					
+					// Send back an acknowledgment
+					// Implement me
+					KVMessage ackMsg = new KVMessage("resp","Success");
+					ackMsg.sendMessage(client);
+				}
+				else if (msg.getMsgType().equals("commit") || msg.getMsgType().equals("abort")) {
+					// Check in TPCLog for the case when SlaveServer is restarted
+					// Implement me
+					tpcLog.appendAndFlush(msg);
+					handleMasterResponse(msg, originalMessage, aborted);
+					
+					// Reset state
+					// Implement me
+					aborted = false;
+					ignoreNext = false;
+					originalMessage = null;
+				}
+				// Finally, close the connection
+				closeConn();
+			}
+			catch (KVException e) {
+				// failure here will result in a timeout anyways,
+				// no need to send anything back to master
+				e.printStackTrace();
+			}
+			catch (IOException e2) {
+				// problem occurred in establishing connection from master
+				// to slave. results in timeout, so do nothing here
+				e2.printStackTrace();
+			}
 			
-			if (msg.getMsgType().equals("putreq")) {
-				handlePut(msg, key);
-			}
-			else if (msg.getMsgType().equals("getreq")) {
-				handleGet(msg, key);
-			}
-			else if (msg.getMsgType().equals("delreq")) {
-				handleDel(msg, key);
-			} 
-			else if (msg.getMsgType().equals("ignoreNext")) {
-				// Set ignoreNext to true. PUT and DEL handlers know what to do.
-				// Implement me
-				
-				// Send back an acknowledgment
-				// Implement me
-			}
-			else if (msg.getMsgType().equals("commit") || msg.getMsgType().equals("abort")) {
-				// Check in TPCLog for the case when SlaveServer is restarted
-				// Implement me
-				
-				handleMasterResponse(msg, originalMessage, aborted);
-				
-				// Reset state
-				// Implement me
-			}
-			
-			// Finally, close the connection
-			closeConn();
 		}
 
-		private void handlePut(KVMessage msg, String key) {
+		private void handlePut(KVMessage msg, String key) throws KVException {
 			AutoGrader.agTPCPutStarted(slaveID, msg, key);
 			
-			// Store for use in the second phase
-			originalMessage = new KVMessage(msg);
-			
-			// Implement me
-
+			if (ignoreNext){
+				ignoreNext = false;
+				KVMessage abortMsg = new KVMessage("abort");
+				abortMsg.sendMessage(client);
+			}
+			else {
+				tpcLog.appendAndFlush(msg);
+				originalMessage = msg;
+				KVMessage readyMsg = new KVMessage("ready");
+				readyMsg.sendMessage(client);
+			}
 			AutoGrader.agTPCPutFinished(slaveID, msg, key);
 		}
 		
- 		private void handleGet(KVMessage msg, String key) {
+ 		private void handleGet(KVMessage msg, String key) throws KVException {
  			AutoGrader.agGetStarted(slaveID);
 			
  			// Implement me
- 			
+ 			try{
+ 				// changed to use keyserver, the KVServer given to ClientHandler
+ 				String value = keyserver.get(key);
+ 				KVMessage getResp = new KVMessage("resp");
+ 				getResp.setKey(key);
+ 				getResp.setValue(value);
+ 				getResp.sendMessage(client);
+ 			}
+ 			catch (KVException e){
+ 				KVMessage errorMsg = new KVMessage("resp", "Does not exist");
+ 				errorMsg.sendMessage(client);
+ 			}
  			AutoGrader.agGetFinished(slaveID);
+ 			
 		}
 		
-		private void handleDel(KVMessage msg, String key) {
+		private void handleDel(KVMessage msg, String key) throws KVException {
 			AutoGrader.agTPCDelStarted(slaveID, msg, key);
 
-			// Store for use in the second phase
-			originalMessage = new KVMessage(msg);
-			
-			// Implement me
-			
+			if (ignoreNext || !keyserver.hasKey(key)){
+				ignoreNext = false;
+				aborted = true;
+				KVMessage abortMsg = new KVMessage("abort");
+				abortMsg.sendMessage(client);
+			}
+			else{
+				tpcLog.appendAndFlush(msg);
+				originalMessage = msg;
+				KVMessage readyMsg = new KVMessage("ready");
+				readyMsg.sendMessage(client);
+			}
 			AutoGrader.agTPCDelFinished(slaveID, msg, key);
 		}
 
@@ -156,11 +201,26 @@ public class TPCMasterHandler implements NetworkHandler {
 		 * @param masterResp Global decision taken by the master
 		 * @param origMsg Message from the actual client (received via the coordinator/master)
 		 * @param origAborted Did this slave server abort it in the first phase 
+		 * @throws KVException 
 		 */
-		private void handleMasterResponse(KVMessage masterResp, KVMessage origMsg, boolean origAborted) {
+		private void handleMasterResponse(KVMessage masterResp, KVMessage origMsg, boolean origAborted) throws KVException {
 			AutoGrader.agSecondPhaseStarted(slaveID, origMsg, origAborted);
 			
-			// Implement me
+			if (masterResp.getMsgType().equals("commit")){
+				if (originalMessage.getMsgType().equals("putreq")){
+					String key = originalMessage.getKey();
+					String value = originalMessage.getValue();
+					keyserver.put(key, value);
+				}
+				if (originalMessage.getMsgType().equals("delreq")){
+					String key = originalMessage.getKey();
+					keyserver.del(key);
+				}
+			}
+			
+			KVMessage ackMsg = new KVMessage("ack");
+			ackMsg.sendMessage(client);
+			tpcLog.appendAndFlush(ackMsg);
 			
 			AutoGrader.agSecondPhaseFinished(slaveID, origMsg, origAborted);
 		}
@@ -182,6 +242,10 @@ public class TPCMasterHandler implements NetworkHandler {
 			return;
 		}		
 		AutoGrader.agFinishedTPCRequest(slaveID);
+	}
+	
+	public void stop() {
+		threadpool.setShutdownStatus();
 	}
 
 	/**
