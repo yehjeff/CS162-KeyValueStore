@@ -135,9 +135,9 @@ public class TPCMaster {
 			// implement me  
 			String delims = "[@:]"; //delim by @ or :
 			String[] tokens = slaveInfo.split(delims);
-			String slaveID = tokens[0];
-			String hostName = tokens[1];
-			String port = tokens[2];
+			slaveID = Long.parseLong(tokens[0]);
+			hostName = tokens[1];
+			port = Integer.parseInt(tokens[2]);
 		}
 
 		public long getSlaveID() {
