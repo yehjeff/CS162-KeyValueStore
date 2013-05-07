@@ -114,8 +114,8 @@ public class KVMessage implements Serializable{
 	}
 	
 	//TODO: new types abort/ready/commit/ack DONE?
-	//TODO: add catch for inputstream timeout and throw the right kvexception
-	//TODO: input stream constructor needs to be able to read TPCOpID
+	//TODO: add catch for inputstream timeout and throw the right kvexception 
+	//TODO: input stream constructor needs to be able to read TPCOpID DONE?
 	//TODO: toXML needs to work with new msgTypes as well as the TPCOpID field DONE?
 	
 	/***
@@ -177,6 +177,7 @@ public class KVMessage implements Serializable{
 	    	 Node keyNode =  KVElement.getElementsByTagName("Key").item(0); 
 	    	 Node valueNode =  KVElement.getElementsByTagName("Value").item(0);
 	    	 Node messageNode =  KVElement.getElementsByTagName("Message").item(0);
+	    	 Node tpcNode = KVElement.getElementsByTagName("TPCOpId").item(0);
 	    	 //make sure the found element node is not null (i.e. the KVMessage didn't have that tag) before setting it
 	    	 //self-note: NodeList.item(x) returns null if x >= NodeList.getLength()
 	    	 if (keyNode != null) {
@@ -188,8 +189,13 @@ public class KVMessage implements Serializable{
 	    	 if (messageNode != null) {
 	    		 this.message = messageNode.getTextContent();
 	    	 }
+	    	 if (tpcNode != null) {
+	    		 this.tpcOpId = tpcNode.getTextContent();
+	    	 }
 	    	 // NOTE: do we need to close the input stream? the TA didn't mention needing to
 	    	 
+	     } catch (TimeoutException TOErr) {
+	     }
 	     } catch (IOException IOErr) {
 	    	 KVMessage exceptMsg = new KVMessage("resp", "Network Error: Could not receive data");
 	    	 throw new KVException(exceptMsg);
