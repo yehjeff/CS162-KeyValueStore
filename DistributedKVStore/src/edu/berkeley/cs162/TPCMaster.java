@@ -357,8 +357,7 @@ public class TPCMaster {
 					KVMessage commitMsg = new KVMessage("abort");
 					sendDecision(id1,commitMsg);
 					sendDecision(id2,commitMsg);
-					exceptionMsg = new KVMessage("resp", "Unknown Error: slave server timed out");
-					throw new KVException (msg);
+					throw e;
 				}
 
 				if (responseMsg1.getMsgType().equals("ready") && responseMsg2.getMsgType().equals("ready")){

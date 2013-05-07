@@ -198,6 +198,7 @@ public class KVMessage implements Serializable{
 	    	 
 	     } catch (SocketTimeoutException TOErr) {
 	    	 KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Timed Out");
+	    	 throw new KVException(exceptMsg);
 	     } catch (IOException IOErr) {
 	    	 KVMessage exceptMsg = new KVMessage("resp", "Network Error: Could not receive data");
 	    	 throw new KVException(exceptMsg);
