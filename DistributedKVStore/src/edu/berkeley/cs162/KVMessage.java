@@ -36,6 +36,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
+
 import javax.xml.parsers.*;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
@@ -194,8 +196,8 @@ public class KVMessage implements Serializable{
 	    	 }
 	    	 // NOTE: do we need to close the input stream? the TA didn't mention needing to
 	    	 
-	     } catch (TimeoutException TOErr) {
-	     }
+	     } catch (SocketTimeoutException TOErr) {
+	    	 KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Timed Out");
 	     } catch (IOException IOErr) {
 	    	 KVMessage exceptMsg = new KVMessage("resp", "Network Error: Could not receive data");
 	    	 throw new KVException(exceptMsg);
