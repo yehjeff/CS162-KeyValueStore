@@ -113,10 +113,10 @@ public class KVMessage implements Serializable{
 	    } // ignore close
 	}
 	
-	//TODO: new types abort/ready/commit/ack
+	//TODO: new types abort/ready/commit/ack DONE?
 	//TODO: add catch for inputstream timeout and throw the right kvexception
 	//TODO: input stream constructor needs to be able to read TPCOpID
-	//TODO: toXML needs to work with new msgTypes as well as the TPCOpID field
+	//TODO: toXML needs to work with new msgTypes as well as the TPCOpID field DONE?
 	
 	/***
 	 * 
@@ -125,19 +125,19 @@ public class KVMessage implements Serializable{
 	 */
 	public KVMessage(String msgType) throws KVException {
 		//first check for valid msgType where valid = getreq, putreq. delreq, or resp
-	    if ((msgType.equals("getreq")) || (msgType.equals("putreq")) || (msgType.equals("delreq")) || (msgType.equals("resp"))) {
+	    if ((msgType.equals("getreq")) || (msgType.equals("putreq")) || (msgType.equals("delreq")) || (msgType.equals("resp")) || (msgType.equals("abort")) || (msgType.equals("ready")) || (msgType.equals("commit")) || (msgType.equals("ack"))) {
 	    	//passed msgType checking
 	    	this.msgType = msgType;
 	    } else {
 	    	//unknown or incorrectly formatted msgType
-	    	KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Message format incorrect");
+	    	KVMessage exceptMsg = new KVMessage("resp", "Message format incorrect");
 	    	throw new KVException(exceptMsg);
 	    }
 	}
 	
 	public KVMessage(String msgType, String message) throws KVException {
 		//first check for valid msgType where valid = getreq, putreq. delreq, or resp
-	    if ((msgType.equals("getreq")) || (msgType.equals("putreq")) || (msgType.equals("delreq")) || (msgType.equals("resp"))) {
+	    if ((msgType.equals("getreq")) || (msgType.equals("putreq")) || (msgType.equals("delreq")) || (msgType.equals("resp")) || (msgType.equals("abort")) || (msgType.equals("ready")) || (msgType.equals("commit")) || (msgType.equals("ack"))) {
 	    	//passed msgType checking
 	    	this.msgType = msgType;
 	    	this.message = message;
@@ -215,9 +215,11 @@ public class KVMessage implements Serializable{
 	 * a. "XML Error: Received unparseable message" - if the received message is not valid XML.
 	 * b. "Network Error: Could not receive data" - if there is a network error causing an incomplete parsing of the message.
 	 * c. "Message format incorrect" - if there message does not conform to the required specifications. Examples include incorrect message type. 
+	 * @throws IOException 
 	 */
-	public KVMessage(Socket sock) throws KVException {
-		
+	public KVMessage(Socket sock) throws KVException, IOException {
+		//our implementation does not need this. just felt like tossing this in.
+		this(sock.getInputStream());
 	}
 
 	/**
@@ -288,6 +290,23 @@ public class KVMessage implements Serializable{
 					KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Incorrect fields for 'resp' msgType");
 					throw new KVException(exceptMsg);
 				}
+			} else if (this.msgType.equals("commit")) {
+				//we control this so checking doesn't need to be as strict
+				//do nothing, TPCOpID is included for all msgTypes
+			} else if (this.msgType.equals("ready")) {
+				//we control this so checking doesn't need to be as strict
+				//do nothing, TPCOpID is included for all msgTypes
+			} else if (this.msgType.equals("abort")) {
+				//we control this so checking doesn't need to be as strict
+				//TPCOpID is included for all msgTypes
+				//some aborts include an Error Message
+				if (this.message != null) {
+					includeMsg = true;
+				}
+			} else if (this.msgType.equals("ack")) {
+				//we control this so checking doesn't need to be as strict
+				//do nothing, TPCOpID is included for all msgTypes
+				
 		    } else {
 		    	//unknown or incorrectly formatted msgType
 		    	KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Message format incorrect");
@@ -330,6 +349,16 @@ public class KVMessage implements Serializable{
 				Element msgElem = doc.createElement("Message");
 				msgElem.appendChild(doc.createTextNode(this.message));
 				rootKVMessage.appendChild(msgElem);
+			}
+			//added check for tpcOpId
+			if (this.tpcOpId != null) {
+				if (this.tpcOpId.length() == 0) {
+					KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: TPCOpId is zero-length");
+					throw new KVException(exceptMsg);
+				}
+				Element tpcElem = doc.createElement("TPCOpId");
+				tpcElem.appendChild(doc.createTextNode(this.tpcOpId));
+				rootKVMessage.appendChild(tpcElem);
 			}
 			
 			//use StringWriter and Transformer to convert the created XML document to string format
