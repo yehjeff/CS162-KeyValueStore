@@ -127,7 +127,7 @@ public class KVMessage implements Serializable{
 	 */
 	public KVMessage(String msgType) throws KVException {
 		//first check for valid msgType where valid = getreq, putreq. delreq, or resp
-	    if ((msgType.equals("getreq")) || (msgType.equals("putreq")) || (msgType.equals("delreq")) || (msgType.equals("resp")) || (msgType.equals("abort")) || (msgType.equals("ready")) || (msgType.equals("commit")) || (msgType.equals("ack")) || (msgType.equals("register")) || (msgType.equals("ignoreNext"))) {
+	    if (msgType != null && ( msgType.equals("getreq") || (msgType.equals("putreq")) || (msgType.equals("delreq")) || (msgType.equals("resp")) || (msgType.equals("abort")) || (msgType.equals("ready")) || (msgType.equals("commit")) || (msgType.equals("ack")) || (msgType.equals("register")) || (msgType.equals("ignoreNext")))) {
 	    	//passed msgType checking
 	    	this.msgType = msgType;
 	    } else {
@@ -139,7 +139,7 @@ public class KVMessage implements Serializable{
 	
 	public KVMessage(String msgType, String message) throws KVException {
 		//first check for valid msgType where valid = getreq, putreq. delreq, or resp
-	    if ((msgType.equals("getreq")) || (msgType.equals("putreq")) || (msgType.equals("delreq")) || (msgType.equals("resp")) || (msgType.equals("abort")) || (msgType.equals("ready")) || (msgType.equals("commit")) || (msgType.equals("ack")) || (msgType.equals("register")) || (msgType.equals("ignoreNext"))) {
+	    if (message != null && msgType != null && ((msgType.equals("getreq")) || (msgType.equals("putreq")) || (msgType.equals("delreq")) || (msgType.equals("resp")) || (msgType.equals("abort")) || (msgType.equals("ready")) || (msgType.equals("commit")) || (msgType.equals("ack")) || (msgType.equals("register")) || (msgType.equals("ignoreNext")))) {
 	    	//passed msgType checking
 	    	this.msgType = msgType;
 	    	this.message = message;

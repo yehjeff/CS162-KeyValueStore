@@ -62,6 +62,7 @@ public class TPCMasterHandler implements NetworkHandler {
 		this.kvServer = keyserver;
 		this.slaveID = slaveID;
 		threadpool = new ThreadPool(1);
+		
 	}
 
 	public TPCMasterHandler(KVServer kvServer, long slaveID, int connections) {
