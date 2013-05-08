@@ -48,7 +48,9 @@ public class Client {
 			System.out.println("getting key=3");			
 			String value = kc.get(three);					
 			System.out.println("returned: " + value);
+			System.out.println("deleting key=3");			
 			kc.del(three);
+			System.out.println("done");
 		}catch(Exception e){
 			e.printStackTrace();
 		}

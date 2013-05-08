@@ -47,7 +47,7 @@ public class SlaveServer {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
-		if (args.length != 4) {
+		if (args.length != 2) {
 			System.err.println("USAGE: SlaveServer <slaveID> <masterHostName>");
 			System.exit(1);
 		}

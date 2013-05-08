@@ -82,7 +82,7 @@ public class TPCMaster {
 			public void run() {    
 				try {
 					KVMessage registerMsg = new KVMessage(client.getInputStream());
-					isParseable(registerMsg);     //throws KVException if not parsable
+				//	isParseable(registerMsg);     //throws KVException if not parsable
 					String delims = "[@]";
 					String[] tokens = registerMsg.getMessage().split(delims);
 					Long slaveID = Long.parseLong(tokens[0]);
@@ -95,6 +95,7 @@ public class TPCMaster {
 					KVMessage ackMsg = new KVMessage("resp", "Successfully registered " + registerMsg.getMessage());
 					ackMsg.sendMessage(client);
 				} catch (Exception e) {
+					e.printStackTrace();
 					//ignore bad messages (like unparseable)
 				} finally {
 					try {
@@ -207,6 +208,10 @@ public class TPCMaster {
 
 		// Create registration server
 		regServer = new SocketServer("localhost", 9090);
+		
+		this.slaveInfoMap = new HashMap<Long,SlaveInfo>();
+		this.slaveServerIDs = new TreeSet<Long>();
+		
 	}
 
 	/**
@@ -447,7 +452,7 @@ public class TPCMaster {
 			msg.sendMessage(slaveSocket);
 			try {
 				responseMsg = new KVMessage(slaveSocket.getInputStream());
-				if (responseMsg.getMessage().equals("Does not exist")){
+				if (responseMsg.getMessage() != null && responseMsg.getMessage().equals("Does not exist")){
 					exceptionMsg = new KVMessage("resp", "Does not exist");
 					throw new KVException(exceptionMsg);
 				}
@@ -465,7 +470,7 @@ public class TPCMaster {
 				msg.sendMessage(slaveSocket);
 				try {
 					responseMsg = new KVMessage(slaveSocket.getInputStream());
-					if (responseMsg.getMessage().equals("Does not exist")){
+					if (responseMsg.getMessage() != null && responseMsg.getMessage().equals("Does not exist")){
 						exceptionMsg = new KVMessage("resp", "Does not exist");
 						throw new KVException(exceptionMsg);
 					}
