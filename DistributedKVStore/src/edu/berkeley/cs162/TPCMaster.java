@@ -444,7 +444,7 @@ public class TPCMaster {
 			masterCache.getWriteLock(key).lock();
 
 			value = masterCache.get(key);
-			if (value == null)
+			if (value != null)
 				return value;
 
 			slaveSocket = info1.connectHost();
@@ -499,7 +499,7 @@ public class TPCMaster {
 	 * @param msg Registration message to parse
 	 * @throws KVException
 	 */
-	private static void isParseable(KVMessage msg) throws KVException {
+	public static void isParseable(KVMessage msg) throws KVException {
 		String regMsg = msg.getMessage();
 		String pattern = "[0-9]+@[A-Za-z]+:[0-9]+";
 		Pattern p = Pattern.compile(pattern);
