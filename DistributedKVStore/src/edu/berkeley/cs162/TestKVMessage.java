@@ -20,7 +20,7 @@ public class TestKVMessage extends TestCase {
 	//single argument constructor test, correct inputs
 	public void testBasicConstructorValid() {
 		try {
-			String[] validTypes = {"putreq", "delreq", "getreq", "resp", "abort", "ready", "commit", "ack"};
+			String[] validTypes = {"putreq", "delreq", "getreq", "resp", "abort", "ready", "commit", "ack", "register", "ignoreNext"};
 			for(int i = 0; i < validTypes.length; i++) {
 				KVMessage testMsg = new KVMessage(validTypes[i]);
 				assertEquals("should have correct message type", validTypes[i], testMsg.getMsgType());
@@ -50,9 +50,9 @@ public class TestKVMessage extends TestCase {
 	//two argument constructor test with message, valid inputs
 	public void testMessageConstructorValid() {
 		try {
-			String[] validTypes = {"putreq", "delreq", "getreq", "resp", "abort", "ready", "commit", "ack"};
+			String[] validTypes = {"putreq", "delreq", "getreq", "resp", "abort", "ready", "commit", "ack", "register", "ignoreNext"};
 			//technically you should never need to use this function with ready/commit/ack...
-			String[] messages = {"junit", "tests", "are", "cool", "especially", "during", "dead", "week"};
+			String[] messages = {"junit", "tests", "are", "cool", "especially", "during", "dead", "week", "!", "?"};
 			for(int i = 0; i < validTypes.length; i++) {
 				KVMessage testMsg = new KVMessage(validTypes[i], messages[i]);
 				assertEquals("should have correct message type", validTypes[i], testMsg.getMsgType());
@@ -102,10 +102,15 @@ public class TestKVMessage extends TestCase {
 	private String XMLextraField = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"resp\"> <Whatintheworld>WHAT_IS_THIS</Whatintheworld> </KVMessage>";
 	private String XMLgibberish = "<?xml vers54qion=\"1.0\" encq4o,<>ding=\"UTF-8\"?> <<KVMe,.ssq4<age type=\"r'&#esp\"> <////KVMessage>/";
 	
-	private String XML2PCput;
-	private String XML2PCdel;
-	private String XML2PCready;
-	private String XML2PCabort;
+	private String XML2PCput = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"putreq\"> <Key>KEY</Key> <Value>VAL</Value> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
+	private String XML2PCdel = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"delreq\"> <Key>KEY</Key> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
+	private String XML2PCready = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"ready\"> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
+	private String XML2PCabort = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"abort\"> <Message>MSG</Message> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
+	private String XML2PCdecideCommit = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"commit\"> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
+	private String XML2PCdecideAbort = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"abort\"> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
+	private String XML2PCack = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"ack\"> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
+	private String XML2PCregister = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"register\"> <Message>MSG</Message> </KVMessage>";
+	private String XML2PCignoreNext = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"ignoreNext\"> </KVMessage>";
 	
 	//inputStream constructor test with valid xml files
 	public void testInputConstructorValid() {
