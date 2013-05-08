@@ -127,7 +127,7 @@ public class KVMessage implements Serializable{
 	 */
 	public KVMessage(String msgType) throws KVException {
 		//first check for valid msgType where valid = getreq, putreq. delreq, or resp
-	    if ((msgType.equals("getreq")) || (msgType.equals("putreq")) || (msgType.equals("delreq")) || (msgType.equals("resp")) || (msgType.equals("abort")) || (msgType.equals("ready")) || (msgType.equals("commit")) || (msgType.equals("ack"))) {
+	    if ((msgType.equals("getreq")) || (msgType.equals("putreq")) || (msgType.equals("delreq")) || (msgType.equals("resp")) || (msgType.equals("abort")) || (msgType.equals("ready")) || (msgType.equals("commit")) || (msgType.equals("ack")) || (msgType.equals("register"))) {
 	    	//passed msgType checking
 	    	this.msgType = msgType;
 	    } else {
@@ -139,7 +139,7 @@ public class KVMessage implements Serializable{
 	
 	public KVMessage(String msgType, String message) throws KVException {
 		//first check for valid msgType where valid = getreq, putreq. delreq, or resp
-	    if ((msgType.equals("getreq")) || (msgType.equals("putreq")) || (msgType.equals("delreq")) || (msgType.equals("resp")) || (msgType.equals("abort")) || (msgType.equals("ready")) || (msgType.equals("commit")) || (msgType.equals("ack"))) {
+	    if ((msgType.equals("getreq")) || (msgType.equals("putreq")) || (msgType.equals("delreq")) || (msgType.equals("resp")) || (msgType.equals("abort")) || (msgType.equals("ready")) || (msgType.equals("commit")) || (msgType.equals("ack")) || (msgType.equals("register"))) {
 	    	//passed msgType checking
 	    	this.msgType = msgType;
 	    	this.message = message;
@@ -316,6 +316,8 @@ public class KVMessage implements Serializable{
 				//we control this so checking doesn't need to be as strict
 				//do nothing, TPCOpID is included for all msgTypes
 				
+			} else if (this.msgType.equals("register")) {
+				includeMsg = true;
 		    } else {
 		    	//unknown or incorrectly formatted msgType
 		    	KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Message format incorrect");

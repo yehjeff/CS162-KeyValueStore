@@ -20,13 +20,14 @@ public class TestKVMessage extends TestCase {
 	//single argument constructor test, correct inputs
 	public void testBasicConstructorValid() {
 		try {
-			String[] validTypes = {"putreq", "delreq", "getreq", "resp"};
+			String[] validTypes = {"putreq", "delreq", "getreq", "resp", "abort", "ready", "commit", "ack"};
 			for(int i = 0; i < validTypes.length; i++) {
 				KVMessage testMsg = new KVMessage(validTypes[i]);
 				assertEquals("should have correct message type", validTypes[i], testMsg.getMsgType());
 				assertNull("other fields should be null", testMsg.getKey());
 				assertNull("other fields should be null", testMsg.getValue());
 				assertNull("other fields should be null", testMsg.getMessage());
+				assertNull("other fields should be null", testMsg.getTpcOpId());
 			}
 			
 		} catch (KVException e) {
@@ -49,14 +50,16 @@ public class TestKVMessage extends TestCase {
 	//two argument constructor test with message, valid inputs
 	public void testMessageConstructorValid() {
 		try {
-			String[] validTypes = {"putreq", "delreq", "getreq", "resp"};
-			String[] messages = {"junit", "tests", "are", "cool"};
+			String[] validTypes = {"putreq", "delreq", "getreq", "resp", "abort", "ready", "commit", "ack"};
+			//technically you should never need to use this function with ready/commit/ack...
+			String[] messages = {"junit", "tests", "are", "cool", "especially", "during", "dead", "week"};
 			for(int i = 0; i < validTypes.length; i++) {
 				KVMessage testMsg = new KVMessage(validTypes[i], messages[i]);
 				assertEquals("should have correct message type", validTypes[i], testMsg.getMsgType());
 				assertNull("other fields should be null", testMsg.getKey());
 				assertNull("other fields should be null", testMsg.getValue());
 				assertEquals("should have correct message", messages[i], testMsg.getMessage());
+				assertNull("other fields should be null", testMsg.getTpcOpId());
 			}
 			
 		} catch (KVException e) {
@@ -98,6 +101,11 @@ public class TestKVMessage extends TestCase {
 	private String XMLwrongMsgType = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"wrong\"> </KVMessage>";
 	private String XMLextraField = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"resp\"> <Whatintheworld>WHAT_IS_THIS</Whatintheworld> </KVMessage>";
 	private String XMLgibberish = "<?xml vers54qion=\"1.0\" encq4o,<>ding=\"UTF-8\"?> <<KVMe,.ssq4<age type=\"r'&#esp\"> <////KVMessage>/";
+	
+	private String XML2PCput;
+	private String XML2PCdel;
+	private String XML2PCready;
+	private String XML2PCabort;
 	
 	//inputStream constructor test with valid xml files
 	public void testInputConstructorValid() {
