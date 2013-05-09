@@ -121,6 +121,7 @@ public class TestRebuildKeyServer extends TestCase {
 	}
 	
 	public void restartServer1() {
+		slaveserver1 = new SocketServer("localhost");
 		slaveserver1.addHandler(handler1);
 		try {
 			tpcLog1.rebuildKeyServer();
@@ -197,20 +198,25 @@ public class TestRebuildKeyServer extends TestCase {
 			//restart one of the servers
 			new Thread(new runServer1()).start();
 			try {
-				Thread.sleep(20000);
+				Thread.sleep(10000);
 				//get should find the correct key from the log of the one restarted server
 				val = client.get("keyA");
 				assertEquals("get should find correct key from recovered slave", "valA", val);
+				System.out.println("ASuccess");
 				val = client.get("keyB");
 				assertEquals("get should find correct key from recovered slave", "valB", val);
+				System.out.println("BSuccess");
 				val = client.get("keyC");
 				assertEquals("get should find correct key from recovered slave", "valC", val);
+				System.out.println("CSuccess");
 				val = client.get("keyD");
+				System.out.println("DSuccess");
 				assertEquals("get should find correct key from recovered slave", "valD", val);
 				val = client.get("keyDel");
 				//assertNull("the deleted key should stay deleted", val);
 			}
 			catch (KVException KVe) {
+				
 				fail(KVe.getMsg().getMessage());
 			}
 			catch (Exception e){
