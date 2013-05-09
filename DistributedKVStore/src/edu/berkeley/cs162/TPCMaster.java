@@ -183,7 +183,7 @@ public class TPCMaster {
 	private static final int TIMEOUT_MILLISECONDS = 5000;
 
 	// Cache stored in the Master/Coordinator Server
-	private KVCache masterCache = new KVCache(100, 10);
+	private KVCache masterCache = new KVCache(100, 10); //100, 10
 
 	// Registration server that uses TPCRegistrationHandler
 	private SocketServer regServer = null;

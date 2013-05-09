@@ -188,7 +188,17 @@ public class TestRebuildKeyServer extends TestCase {
 			client.del("keyDel");
 			client.put("keyD", "valD");
 			client.put("keyE", "valE");
-			
+			val = client.get("keyA");
+			assertEquals("get should find correct key from recovered slave", "valA", val);
+			//System.out.println("ASuccess");
+			val = client.get("keyB");
+			assertEquals("get should find correct key from recovered slave", "valB", val);
+			//System.out.println("BSuccess");
+			val = client.get("keyC");
+			assertEquals("get should find correct key from recovered slave", "valC", val);
+			//System.out.println("CSuccess");
+			val = client.get("keyD");
+			//System.out.println("DSuccess");
 		}
 		catch (Exception e){
 			fail("Shouldn't have failed with the put");
@@ -216,8 +226,9 @@ public class TestRebuildKeyServer extends TestCase {
 				//assertNull("the deleted key should stay deleted", val);
 			}
 			catch (KVException KVe) {
-				
-				fail(KVe.getMsg().getMessage());
+				if (!KVe.getMsg().getMessage().equals("Does not exist")) {
+					fail(KVe.getMsg().getMessage());
+				}
 			}
 			catch (Exception e){
 				fail("Shouldn't have failed on get of a valid key after restarting a slave server");
