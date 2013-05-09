@@ -31,6 +31,7 @@
 package edu.berkeley.cs162;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,7 +42,7 @@ public class AutoGrader {
 	/**
 	 * Information for individual operations
 	 */
-	private static class TestOperation {
+	private static class TestOperation  {
 		// Thread to execute this operation in
 		Thread execThread = null;
 		
@@ -215,7 +216,7 @@ public class AutoGrader {
 		
 		// Initialize
 		currentOp = 0;
-		TEST_OPS = (TestOperation[]) testOps.toArray();
+		TEST_OPS = testOps.toArray(new TestOperation[testOps.size()]);
 		
 		curTestID = 1;
 		
@@ -242,7 +243,7 @@ public class AutoGrader {
 			if (killAtFirstPhase.size() == 0) {
 				killAtFirstPhase.add(new Long(slaveIds[i]));
 			}
-			
+			System.out.println("In the for loop");
 			// Store mapping from slaveIDs to corresponding threads
 			slaveID2ThreadMap.put(slaveIds[i], serverThreads[i]);
 			
@@ -312,8 +313,13 @@ public class AutoGrader {
 			KVServer kvServer = new KVServer(numSets, maxElemsPerSet);
 			
 			TPCMasterHandler handler = new TPCMasterHandler(kvServer, slaveId, 1);
-			
+			try {
+			server = new SocketServer(InetAddress.getLocalHost().getHostAddress());
+			} catch (Exception e){
+				System.out.println("Caught some exceptin in ServerThread.run()");
+			}
 			// Create TPCLog
+			System.out.println(server);
             String logPath = slaveId + "@" + server.getHostname();
             TPCLog tpcLog = new TPCLog(logPath, kvServer);
             

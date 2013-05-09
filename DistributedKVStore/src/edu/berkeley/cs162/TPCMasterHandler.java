@@ -236,7 +236,9 @@ public class TPCMasterHandler implements NetworkHandler {
 		private void handleMasterResponse(KVMessage masterResp, KVMessage origMsg, boolean origAborted) throws KVException {
 			AutoGrader.agSecondPhaseStarted(slaveID, origMsg, origAborted);
 
+
 			if (masterResp.getMsgType().equals("commit") && aborted == false){
+
 				if (originalMessage.getMsgType().equals("putreq")){
 					String key = originalMessage.getKey();
 					String value = originalMessage.getValue();
