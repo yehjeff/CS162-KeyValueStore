@@ -44,7 +44,7 @@ public class Server {
 	public static void main(String[] args) throws Exception {		
 		
 		// Create TPCMaster
-		tpcMaster = new TPCMaster(Integer.parseInt(args[0]));
+		tpcMaster = new TPCMaster(1);
 		tpcMaster.run();
 		
 		// Create KVClientHandler
