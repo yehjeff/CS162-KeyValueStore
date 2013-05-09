@@ -527,7 +527,7 @@ public class TPCMaster {
 	}
 
 	public void stop(){
-		regServer.finalize();
+		regServer.stop();
 	}
 	
 	
