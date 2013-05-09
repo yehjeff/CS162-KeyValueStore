@@ -2,15 +2,27 @@ package edu.berkeley.cs162;
 
 import static org.junit.Assert.*;
 
+import java.net.InetAddress;
+
 import org.junit.Test;
 
 public class TestTPCMasterHandler{
 	//setting up a server, client, slaves...
 	
+	public void setup() throws Exception {
+		SocketServer masterSocket = new SocketServer(InetAddress.getLocalHost().getHostAddress(), 8080);
+		TPCMaster tpcMaster = null;
+		
+		
+		
+	}
 	
 	@Test
 	public void testPut() {
-		fail("Not yet implemented");
+		
+		
+		
+		
 	}
 
 	@Test

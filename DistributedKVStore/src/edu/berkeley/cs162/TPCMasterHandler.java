@@ -54,6 +54,9 @@ public class TPCMasterHandler implements NetworkHandler {
 	private KVMessage originalMessage = null;
 	private boolean aborted = true;	
 
+	private static final int MAX_KEY_SIZE = 256;
+	private static final int MAX_VAL_SIZE = 256 * 1024;
+	
 	public TPCMasterHandler(KVServer keyserver) {
 		this(keyserver, 1);
 	}
@@ -150,8 +153,10 @@ public class TPCMasterHandler implements NetworkHandler {
 					abortMsg.sendMessage(client);
 				}
 				else { 
+					String value = msg.getValue();
 					try {
-						KVServer.checkKey(key);							// better not use this reference to kvserver, cuz autograder might swap out kvserver ?
+						checkKey(key);
+						checkValue(value);						// better not use this reference to kvserver, cuz autograder might swap out kvserver ?
 					} catch (KVException e) {
 						KVMessage abortMsg = new KVMessage("abort");
 						abortMsg.sendMessage(client);
@@ -198,7 +203,7 @@ public class TPCMasterHandler implements NetworkHandler {
 				}
 				else{
 					try {
-						KVServer.checkKey(key);						// better not use this reference to kvserver, cuz autograder might swap out kvserver ?
+						checkKey(key);						// better not use this reference to kvserver, cuz autograder might swap out kvserver ?
 					} catch (KVException e) {
 						KVMessage abortMsg = new KVMessage("abort");
 						abortMsg.sendMessage(client);
@@ -297,5 +302,37 @@ public class TPCMasterHandler implements NetworkHandler {
 
 		master.close();
 		AutoGrader.agRegistrationFinished(slaveID);
+	}
+
+	public static void checkKey(String key) throws KVException {
+		KVMessage exceptMsg = new KVMessage("resp");
+		if (key == null) {
+			exceptMsg.setMessage("Unknown Error: Null Key");
+			throw new KVException(exceptMsg);
+		}
+		if (key.length() > MAX_KEY_SIZE) {
+			exceptMsg.setMessage("Oversized key");
+			throw new KVException(exceptMsg);
+		}
+		if (key.length() < 1) {
+			exceptMsg.setMessage("Unknown Error: Zero Size Key");
+			throw new KVException(exceptMsg);
+		}
+	}
+	
+	public static void checkValue(String value) throws KVException {
+		KVMessage exceptMsg = new KVMessage("resp");
+		if (value == null) {
+			exceptMsg.setMessage("Unknown Error: Null Value");
+			throw new KVException(exceptMsg);
+		}
+		if (value.length() > MAX_VAL_SIZE) {
+			exceptMsg.setMessage("Oversized value");
+			throw new KVException(exceptMsg);
+		}
+		if (value.length() < 1) {
+			exceptMsg.setMessage("Unknown Error: Zero Size Value");
+			throw new KVException(exceptMsg);
+		}
 	}
 }
