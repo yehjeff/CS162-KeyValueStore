@@ -150,9 +150,11 @@ public class TPCLog {
 				if (isCommit) {
 					if (interruptedTpcOperation.getMsgType().equals("putreq")) {
 						kvServer.put(interruptedTpcOperation.getKey(), interruptedTpcOperation.getValue());
+						System.out.println("putting (" + interruptedTpcOperation.getKey() + "," + interruptedTpcOperation.getValue() + ")");
 					} else {
 						//otherwise interruptedTpcOperation has to be a delreq
 						kvServer.del(interruptedTpcOperation.getKey());
+						System.out.println("deleting " + interruptedTpcOperation.getKey());
 					}
 				}
 				interruptedTpcOperation = null;
