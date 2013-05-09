@@ -150,6 +150,7 @@ public class TPCMasterHandler implements NetworkHandler {
 				if (ignoreNext ){
 					ignoreNext = false;
 					KVMessage abortMsg = new KVMessage("abort");
+					aborted = true;
 					abortMsg.sendMessage(client);
 				}
 				else { 
@@ -159,12 +160,14 @@ public class TPCMasterHandler implements NetworkHandler {
 						checkValue(value);						// better not use this reference to kvserver, cuz autograder might swap out kvserver ?
 					} catch (KVException e) {
 						KVMessage abortMsg = new KVMessage("abort");
+						aborted = true;
 						abortMsg.sendMessage(client);
 						return;
 					}
 					tpcLog.appendAndFlush(msg);
 					originalMessage = msg;
 					KVMessage readyMsg = new KVMessage("ready");
+					aborted = false;
 					readyMsg.sendMessage(client);
 				}
 			} finally {
@@ -199,6 +202,7 @@ public class TPCMasterHandler implements NetworkHandler {
 					ignoreNext = false;
 					aborted = true;
 					KVMessage abortMsg = new KVMessage("abort");
+					aborted = true;
 					abortMsg.sendMessage(client);
 				}
 				else{
@@ -206,12 +210,14 @@ public class TPCMasterHandler implements NetworkHandler {
 						checkKey(key);						// better not use this reference to kvserver, cuz autograder might swap out kvserver ?
 					} catch (KVException e) {
 						KVMessage abortMsg = new KVMessage("abort");
+						aborted = true;
 						abortMsg.sendMessage(client);
 						return;
 					}
 					tpcLog.appendAndFlush(msg);
 					originalMessage = msg;
 					KVMessage readyMsg = new KVMessage("ready");
+					aborted = false;
 					readyMsg.sendMessage(client);
 				}
 			} finally {
@@ -230,7 +236,7 @@ public class TPCMasterHandler implements NetworkHandler {
 		private void handleMasterResponse(KVMessage masterResp, KVMessage origMsg, boolean origAborted) throws KVException {
 			AutoGrader.agSecondPhaseStarted(slaveID, origMsg, origAborted);
 
-			if (masterResp.getMsgType().equals("commit")){
+			if (masterResp.getMsgType().equals("commit") && aborted == false){
 				if (originalMessage.getMsgType().equals("putreq")){
 					String key = originalMessage.getKey();
 					String value = originalMessage.getValue();
