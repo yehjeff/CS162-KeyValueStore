@@ -24,6 +24,10 @@ public class TestTPCMaster extends TestCase {
 	NetworkHandler handler;
 	TPCMasterHandler handler1;
 	TPCMasterHandler handler2;
+	String logPath1;
+	String logPath2;
+	TPCLog tpcLog1;
+	TPCLog tpcLog2;
 	
 	public class runMaster implements Runnable {
 		
@@ -83,10 +87,10 @@ public class TestTPCMaster extends TestCase {
 		slaveserver1.addHandler(handler1);
 		slaveserver2.addHandler(handler2);
 		
-		String logPath1 = 1 + "@" + slaveserver1.getHostname();
-		TPCLog tpcLog1 = new TPCLog(logPath1, slave1);
-		String logPath2 = 2 + "@" + slaveserver2.getHostname();
-		TPCLog tpcLog2 = new TPCLog(logPath2, slave2);
+		logPath1 = 1 + "@" + slaveserver1.getHostname();
+		tpcLog1 = new TPCLog(logPath1, slave1);
+		logPath2 = 2 + "@" + slaveserver2.getHostname();
+		tpcLog2 = new TPCLog(logPath2, slave2);
 		try {
 //			tpcLog1.rebuildKeyServer();
 			handler1.setTPCLog(tpcLog1);
@@ -124,7 +128,7 @@ public class TestTPCMaster extends TestCase {
 	}
 	
 
-	@Test
+	/**@Test
 	public void testHandleGet1() {
 		server = "localhost";
 		port = 8080;			
@@ -142,20 +146,15 @@ public class TestTPCMaster extends TestCase {
 		new Thread(new runServers()).start();
 		KVClient client = new KVClient(server, port);
 		String val = null;
-		System.out.println("handleget1");
 		
 		try {
-			Thread.sleep(20000);
+			System.out.println("testHandleGet1()");
+			Thread.sleep(10000);
 			client.put("fuzzy", "wuzzy");
-			System.out.println("after put");
 			val = client.get("fuzzy");
-			System.out.println("after get");
 			assertEquals(val, "wuzzy");
-			client.del("fuzzy");		//need to clear server
 		}
 		catch (Exception e){
-			System.out.println("Value is: " + val);
-			//System.out.println(e.getMsg().getMessage());
 			fail("Shouldn't have failed");
 		} finally {
 			closeServers();
@@ -166,7 +165,7 @@ public class TestTPCMaster extends TestCase {
 	@Test
 	public void testHandleGet2() {
 		server = "localhost";
-		port = 7070;			
+		port = 8070;			
 
 		master = new TPCMaster(2);
 		slave1 = new KVServer(10, 5);
@@ -180,17 +179,16 @@ public class TestTPCMaster extends TestCase {
 		
 		new Thread(new runMaster()).start();
 		new Thread(new runServers()).start();
-		KVClient client = new KVClient(server, port);	
-		System.out.println("handleget2");
+		KVClient client = new KVClient(server, port);
 
 		try {
+			System.out.println("testHandleGet2()");
 			Thread.sleep(10000);
 			//test get on key that doesn't exist
 			client.get("supah");
 		} catch (InterruptedException e1) {
 		} catch (KVException e2){
 			String message = e2.getMsg().getMessage();
-			System.out.println(message);
 			assertTrue(message.equals("Does not exist"));
 		} finally {
 			closeServers();
@@ -198,6 +196,218 @@ public class TestTPCMaster extends TestCase {
 		}
 	}
 	
+	@Test
+	public void testHandleGet3() {
+		server = "localhost";
+		port = 8060;			
+
+		master = new TPCMaster(2);
+		slave1 = new KVServer(10, 5);
+		slave2 = new KVServer(10, 5);
+		masterserver = new SocketServer(server, port);
+		slaveserver1 = new SocketServer(server);
+		slaveserver2 = new SocketServer(server);
+		handler = new KVClientHandler(master);
+		handler1 = new TPCMasterHandler(slave1, 1);
+		handler2 = new TPCMasterHandler(slave2, 2);
+		
+		new Thread(new runMaster()).start();
+		new Thread(new runServers()).start();
+		KVClient client = new KVClient(server, port);
+
+		try {
+			System.out.println("testHandleGet3()");
+			Thread.sleep(10000);
+			//test get on key that doesn't exist
+			client.get(null);
+		} catch (KVException e1){
+			assertTrue(e1.getMsg().getMessage().equals("Unknown Error: Key is null or zero-length"));
+		} catch (Exception e2) {
+		} finally {
+			closeServers();
+			closeMaster();
+		}
+	}
+
+	@Test
+	public void testHandlePut1() {
+		server = "localhost";
+		port = 7070;			
+
+		master = new TPCMaster(2);
+		slave1 = new KVServer(10, 5);
+		slave2 = new KVServer(10, 5);
+		masterserver = new SocketServer(server, port);
+		slaveserver1 = new SocketServer(server);
+		slaveserver2 = new SocketServer(server);
+		handler = new KVClientHandler(master);
+		handler1 = new TPCMasterHandler(slave1, 1);
+		handler2 = new TPCMasterHandler(slave2, 2);
+		String val = null;
+		
+		new Thread(new runMaster()).start();
+		new Thread(new runServers()).start();
+		KVClient client = new KVClient(server, port);
+
+		try {
+			System.out.println("testHandlePut1()");
+			Thread.sleep(10000);
+			client.put("hey", "yo");
+			val = client.get("hey");
+			assertEquals(val, "yo");
+			//testing that putting with the same key will overwrite the prev value
+			client.put("hey", "boi");
+			val = client.get("hey");
+			assertEquals(val, "boi");
+		} catch (Exception e){
+			fail("Shouldn't have failed");
+		} finally {
+			closeServers();
+			closeMaster();
+		}
+	}
+
+	@Test
+	public void testHandlePut2() {
+		server = "localhost";
+		port = 7060;			
+
+		master = new TPCMaster(2);
+		slave1 = new KVServer(10, 5);
+		slave2 = new KVServer(10, 5);
+		masterserver = new SocketServer(server, port);
+		slaveserver1 = new SocketServer(server);
+		slaveserver2 = new SocketServer(server);
+		handler = new KVClientHandler(master);
+		handler1 = new TPCMasterHandler(slave1, 1);
+		handler2 = new TPCMasterHandler(slave2, 2);
+		String val = null;
+		
+		new Thread(new runMaster()).start();
+		new Thread(new runServers()).start();
+		KVClient client = new KVClient(server, port);
+
+		try {
+			System.out.println("testHandlePut2()");
+			Thread.sleep(10000);
+			//testing a bad put with a null key
+			client.put(null, "yo");
+		} catch (KVException e1){
+			System.out.println(e1.getMsg().getMessage());
+			assertEquals("Unknown Error: Key is null or zero-length", e1.getMsg().getMessage());
+		} catch (Exception e2) {
+		} finally {
+			closeServers();
+			closeMaster();
+		}
+	}
+
+	@Test
+	public void testHandlePut3() {
+		server = "localhost";
+		port = 7050;			
+
+		master = new TPCMaster(2);
+		slave1 = new KVServer(10, 5);
+		slave2 = new KVServer(10, 5);
+		masterserver = new SocketServer(server, port);
+		slaveserver1 = new SocketServer(server);
+		slaveserver2 = new SocketServer(server);
+		handler = new KVClientHandler(master);
+		handler1 = new TPCMasterHandler(slave1, 1);
+		handler2 = new TPCMasterHandler(slave2, 2);
+		String val = null;
+		
+		new Thread(new runMaster()).start();
+		new Thread(new runServers()).start();
+		KVClient client = new KVClient(server, port);
+
+		try {
+			System.out.println("testHandlePut3()");
+			Thread.sleep(10000);
+			//testing a bad put with a null value
+			client.put("hey", null);
+		} catch (KVException e1){
+			System.out.println(e1.getMsg().getMessage());
+			assertEquals("Unknown Error: Value is null or zero-length", e1.getMsg().getMessage());
+		} catch (Exception e2) {
+		} finally {
+			closeServers();
+			closeMaster();
+		}
+	}*/
+	
+	@Test
+	public void testHandleDel1() {
+		server = "localhost";
+		port = 6060;			
+
+		master = new TPCMaster(2);
+		slave1 = new KVServer(10, 5);
+		slave2 = new KVServer(10, 5);
+		masterserver = new SocketServer(server, port);
+		slaveserver1 = new SocketServer(server);
+		slaveserver2 = new SocketServer(server);
+		handler = new KVClientHandler(master);
+		handler1 = new TPCMasterHandler(slave1, 1);
+		handler2 = new TPCMasterHandler(slave2, 2);
+		String val = null;
+		
+		new Thread(new runMaster()).start();
+		new Thread(new runServers()).start();
+		KVClient client = new KVClient(server, port);
+
+		try {
+			System.out.println("testHandleDel1()");
+			Thread.sleep(10000);
+			client.put("kame", "hame");
+			client.del("kame");
+			val = client.get("kame");
+			fail();		//never gets here
+		} catch (KVException e1) {
+			System.out.println(e1.getMsg().getMessage());
+			assertEquals("Does not exist", e1.getMsg().getMessage());
+		} catch (Exception e2) {
+		} finally {
+			closeServers();
+			closeMaster();
+		}
+	}
+
+	@Test
+	public void testHandleDel2() {
+		server = "localhost";
+		port = 6050;			
+
+		master = new TPCMaster(2);
+		slave1 = new KVServer(10, 5);
+		slave2 = new KVServer(10, 5);
+		masterserver = new SocketServer(server, port);
+		slaveserver1 = new SocketServer(server);
+		slaveserver2 = new SocketServer(server);
+		handler = new KVClientHandler(master);
+		handler1 = new TPCMasterHandler(slave1, 1);
+		handler2 = new TPCMasterHandler(slave2, 2);
+		String val = null;
+		
+		new Thread(new runMaster()).start();
+		new Thread(new runServers()).start();
+		KVClient client = new KVClient(server, port);
+
+		try {
+			System.out.println("testHandleDel2()");
+			Thread.sleep(10000);
+			client.del("poop");
+			fail();		//never gets here
+		} catch (KVException e1) {
+			System.out.println(e1.getMsg().getMessage());
+			assertEquals("Does not exist", e1.getMsg().getMessage());
+		} catch (Exception e2) {
+		} finally {
+			closeServers();
+			closeMaster();
+		}
+	}
 	
 	@Test
 	public void testIsParseable1() {
