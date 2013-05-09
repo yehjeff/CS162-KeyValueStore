@@ -383,7 +383,7 @@ public class TPCMaster {
 					KVMessage abortMsg = new KVMessage("abort");
 					sendDecision(id1, abortMsg);
 					sendDecision(id2, abortMsg);
-					exceptionMsg = new KVMessage ("resp", "Does not exist");
+					exceptionMsg = new KVMessage ("resp",abortMsg.getMessage());
 					throw new KVException(msg);
 				}
 				info1.closeHost(slaveSocket1);
@@ -445,11 +445,11 @@ public class TPCMaster {
 			KVMessage responseMsg, exceptionMsg;
 			info1 = findFirstReplica(key);
 			masterCache.getWriteLock(key).lock();
-
-			value = masterCache.get(key);
-			if (value != null)
-				return value;
 			try {
+				value = masterCache.get(key);
+				if (value != null)
+					return value;
+
 				slaveSocket = info1.connectHost();
 				slaveSocket.setSoTimeout(TIMEOUT_MILLISECONDS);
 				msg.sendMessage(slaveSocket);

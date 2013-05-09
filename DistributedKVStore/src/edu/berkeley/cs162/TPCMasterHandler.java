@@ -150,6 +150,7 @@ public class TPCMasterHandler implements NetworkHandler {
 				if (ignoreNext ){
 					ignoreNext = false;
 					KVMessage abortMsg = new KVMessage("abort");
+					abortMsg.setMessage("Ignore Next");
 					aborted = true;
 					abortMsg.sendMessage(client);
 				}
@@ -160,6 +161,7 @@ public class TPCMasterHandler implements NetworkHandler {
 						checkValue(value);						// better not use this reference to kvserver, cuz autograder might swap out kvserver ?
 					} catch (KVException e) {
 						KVMessage abortMsg = new KVMessage("abort");
+						abortMsg.setMessage(e.getMsg().getMessage());
 						aborted = true;
 						abortMsg.sendMessage(client);
 						return;
@@ -198,10 +200,19 @@ public class TPCMasterHandler implements NetworkHandler {
 		private void handleDel(KVMessage msg, String key) throws KVException {
 			AutoGrader.agTPCDelStarted(slaveID, msg, key);
 			try {
-				if (ignoreNext || !keyserver.hasKey(key)){
+				if (ignoreNext ){
 					ignoreNext = false;
 					aborted = true;
 					KVMessage abortMsg = new KVMessage("abort");
+					abortMsg.setMessage("Ignore Next");
+					aborted = true;
+					abortMsg.sendMessage(client);
+				
+				} else if (!keyserver.hasKey(key)){
+					ignoreNext = false;
+					aborted = true;
+					KVMessage abortMsg = new KVMessage("abort");
+					abortMsg.setMessage("Does not exist");
 					aborted = true;
 					abortMsg.sendMessage(client);
 				}
@@ -210,6 +221,7 @@ public class TPCMasterHandler implements NetworkHandler {
 						checkKey(key);						// better not use this reference to kvserver, cuz autograder might swap out kvserver ?
 					} catch (KVException e) {
 						KVMessage abortMsg = new KVMessage("abort");
+						abortMsg.setMessage(e.getMsg().getMessage());
 						aborted = true;
 						abortMsg.sendMessage(client);
 						return;
