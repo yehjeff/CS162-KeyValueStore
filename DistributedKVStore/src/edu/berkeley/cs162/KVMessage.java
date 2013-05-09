@@ -294,7 +294,6 @@ public class KVMessage implements Serializable{
 				if (this.message != null) {
 					includeMsg = true;
 				}
-				System.out.println(this.msgType + this.key + this.value + this.message);
 				// or if it doesnt satisfy only msg or only key/value then complain
 				if (!(((includeKey == true) && (includeVal == true) && (includeMsg == false)) || ((includeKey == false) && (includeVal == false) && (includeMsg == true)))) {
 					KVMessage exceptMsg = new KVMessage("resp", "Unknown Error: Incorrect fields for 'resp' msgType");

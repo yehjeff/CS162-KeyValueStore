@@ -383,7 +383,7 @@ public class TPCMaster {
 					KVMessage abortMsg = new KVMessage("abort");
 					sendDecision(id1, abortMsg);
 					sendDecision(id2, abortMsg);
-					exceptionMsg = new KVMessage ("resp", "Does not exist");
+					exceptionMsg = new KVMessage ("resp",abortMsg.getMessage());
 					throw new KVException(msg);
 				}
 				info1.closeHost(slaveSocket1);
