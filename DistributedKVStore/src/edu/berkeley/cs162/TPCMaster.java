@@ -449,11 +449,10 @@ public class TPCMaster {
 			value = masterCache.get(key);
 			if (value != null)
 				return value;
-
-			slaveSocket = info1.connectHost();
-			slaveSocket.setSoTimeout(TIMEOUT_MILLISECONDS);
-			msg.sendMessage(slaveSocket);
 			try {
+				slaveSocket = info1.connectHost();
+				slaveSocket.setSoTimeout(TIMEOUT_MILLISECONDS);
+				msg.sendMessage(slaveSocket);
 				responseMsg = new KVMessage(slaveSocket.getInputStream());
 				if (responseMsg.getMessage() != null && responseMsg.getMessage().equals("Does not exist")){
 					exceptionMsg = new KVMessage("resp", "Does not exist");
@@ -470,11 +469,12 @@ public class TPCMaster {
 				}
 				key = msg.getKey();
 				info2 = findSuccessor(info1);
-				slaveSocket = info2.connectHost();
-
-				slaveSocket.setSoTimeout(TIMEOUT_MILLISECONDS);
-				msg.sendMessage(slaveSocket);
 				try {
+					slaveSocket = info2.connectHost();
+	
+					slaveSocket.setSoTimeout(TIMEOUT_MILLISECONDS);
+					msg.sendMessage(slaveSocket);
+				
 					responseMsg = new KVMessage(slaveSocket.getInputStream());
 					if (responseMsg.getMessage() != null && responseMsg.getMessage().equals("Does not exist")){
 						exceptionMsg = new KVMessage("resp", "Does not exist");
