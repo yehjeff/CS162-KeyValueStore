@@ -62,6 +62,7 @@ public class TPCMasterHandler implements NetworkHandler {
 		this.kvServer = keyserver;
 		this.slaveID = slaveID;
 		threadpool = new ThreadPool(1);
+		
 	}
 
 	public TPCMasterHandler(KVServer kvServer, long slaveID, int connections) {
@@ -142,19 +143,28 @@ public class TPCMasterHandler implements NetworkHandler {
 
 		private void handlePut(KVMessage msg, String key) throws KVException {
 			AutoGrader.agTPCPutStarted(slaveID, msg, key);
-
-			if (ignoreNext){
-				ignoreNext = false;
-				KVMessage abortMsg = new KVMessage("abort");
-				abortMsg.sendMessage(client);
+			try {
+				if (ignoreNext ){
+					ignoreNext = false;
+					KVMessage abortMsg = new KVMessage("abort");
+					abortMsg.sendMessage(client);
+				}
+				else { 
+					try {
+						KVServer.checkKey(key);							// better not use this reference to kvserver, cuz autograder might swap out kvserver ?
+					} catch (KVException e) {
+						KVMessage abortMsg = new KVMessage("abort");
+						abortMsg.sendMessage(client);
+						return;
+					}
+					tpcLog.appendAndFlush(msg);
+					originalMessage = msg;
+					KVMessage readyMsg = new KVMessage("ready");
+					readyMsg.sendMessage(client);
+				}
+			} finally {
+				AutoGrader.agTPCPutFinished(slaveID, msg, key);
 			}
-			else {
-				tpcLog.appendAndFlush(msg);
-				originalMessage = msg;
-				KVMessage readyMsg = new KVMessage("ready");
-				readyMsg.sendMessage(client);
-			}
-			AutoGrader.agTPCPutFinished(slaveID, msg, key);
 		}
 
  		private void handleGet(KVMessage msg, String key) throws KVException {
@@ -170,8 +180,8 @@ public class TPCMasterHandler implements NetworkHandler {
  				getResp.sendMessage(client);
  			}
  			catch (KVException e){
- 				KVMessage errorMsg = new KVMessage("resp", "Does not exist");
- 				errorMsg.sendMessage(client);
+ 				e.getMsg().sendMessage(client);
+ 		//		errorMsg.sendMessage(client);
  			}
  			AutoGrader.agGetFinished(slaveID);
  			
@@ -179,20 +189,29 @@ public class TPCMasterHandler implements NetworkHandler {
 
 		private void handleDel(KVMessage msg, String key) throws KVException {
 			AutoGrader.agTPCDelStarted(slaveID, msg, key);
-
-			if (ignoreNext || !keyserver.hasKey(key)){
-				ignoreNext = false;
-				aborted = true;
-				KVMessage abortMsg = new KVMessage("abort");
-				abortMsg.sendMessage(client);
+			try {
+				if (ignoreNext || !keyserver.hasKey(key)){
+					ignoreNext = false;
+					aborted = true;
+					KVMessage abortMsg = new KVMessage("abort");
+					abortMsg.sendMessage(client);
+				}
+				else{
+					try {
+						KVServer.checkKey(key);						// better not use this reference to kvserver, cuz autograder might swap out kvserver ?
+					} catch (KVException e) {
+						KVMessage abortMsg = new KVMessage("abort");
+						abortMsg.sendMessage(client);
+						return;
+					}
+					tpcLog.appendAndFlush(msg);
+					originalMessage = msg;
+					KVMessage readyMsg = new KVMessage("ready");
+					readyMsg.sendMessage(client);
+				}
+			} finally {
+				AutoGrader.agTPCDelFinished(slaveID, msg, key);
 			}
-			else{
-				tpcLog.appendAndFlush(msg);
-				originalMessage = msg;
-				KVMessage readyMsg = new KVMessage("ready");
-				readyMsg.sendMessage(client);
-			}
-			AutoGrader.agTPCDelFinished(slaveID, msg, key);
 		}
 
 		/**
