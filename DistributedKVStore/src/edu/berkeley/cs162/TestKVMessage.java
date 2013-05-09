@@ -102,16 +102,6 @@ public class TestKVMessage extends TestCase {
 	private String XMLextraField = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"resp\"> <Whatintheworld>WHAT_IS_THIS</Whatintheworld> </KVMessage>";
 	private String XMLgibberish = "<?xml vers54qion=\"1.0\" encq4o,<>ding=\"UTF-8\"?> <<KVMe,.ssq4<age type=\"r'&#esp\"> <////KVMessage>/";
 	
-	private String XML2PCput = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"putreq\"> <Key>KEY</Key> <Value>VAL</Value> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
-	private String XML2PCdel = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"delreq\"> <Key>KEY</Key> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
-	private String XML2PCready = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"ready\"> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
-	private String XML2PCabort = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"abort\"> <Message>MSG</Message> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
-	private String XML2PCdecideCommit = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"commit\"> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
-	private String XML2PCdecideAbort = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"abort\"> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
-	private String XML2PCack = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"ack\"> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
-	private String XML2PCregister = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"register\"> <Message>MSG</Message> </KVMessage>";
-	private String XML2PCignoreNext = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"ignoreNext\"> </KVMessage>";
-	
 	//inputStream constructor test with valid xml files
 	public void testInputConstructorValid() {
 		try {
@@ -610,4 +600,312 @@ public class TestKVMessage extends TestCase {
 		}
 	}
 	*/
+	
+	///New Tests Below for project4
+	
+	private String XML2PCput = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"putreq\"> <Key>KEY</Key> <Value>VAL</Value> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
+	private String XML2PCdel = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"delreq\"> <Key>KEY</Key> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
+	private String XML2PCready = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"ready\"> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
+	private String XML2PCabort = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"abort\"> <Message>MSG</Message> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
+	private String XML2PCdecideCommit = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"commit\"> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
+	private String XML2PCdecideAbort = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"abort\"> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
+	private String XML2PCack = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"ack\"> <TPCOpId>TPCOpId</TPCOpId> </KVMessage>";
+	private String XML2PCregister = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"register\"> <Message>MSG</Message> </KVMessage>";
+	private String XML2PCignoreNext = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> <KVMessage type=\"ignoreNext\"> </KVMessage>";
+	
+	public void test2PCInputStreamConstructor() {
+		try {
+			KVMessage testMsg;
+			ByteArrayInputStream testInputStream;
+			
+			testInputStream = new ByteArrayInputStream(XML2PCput.getBytes("UTF-8"));
+			testMsg = new KVMessage(testInputStream);
+			assertEquals("should have correct msgType", "putreq", testMsg.getMsgType());
+			assertEquals("should have correct key", "KEY", testMsg.getKey());
+			assertEquals("should have correct val", "VAL", testMsg.getValue());
+			assertNull("should have null message", testMsg.getMessage());
+			assertEquals("should have correct tpcopid", "TPCOpId", testMsg.getTpcOpId());
+			
+			testInputStream = new ByteArrayInputStream(XML2PCdel.getBytes("UTF-8"));
+			testMsg = new KVMessage(testInputStream);
+			assertEquals("should have correct msgType", "delreq", testMsg.getMsgType());
+			assertEquals("should have correct key", "KEY", testMsg.getKey());
+			assertNull("should have null value", testMsg.getValue());
+			assertNull("should have null message", testMsg.getMessage());
+			assertEquals("should have correct tpcopid", "TPCOpId", testMsg.getTpcOpId());
+			
+			testInputStream = new ByteArrayInputStream(XML2PCready.getBytes("UTF-8"));
+			testMsg = new KVMessage(testInputStream);
+			assertEquals("should have correct msgType", "ready", testMsg.getMsgType());
+			assertNull("should have null key", testMsg.getKey());
+			assertNull("should have null value", testMsg.getValue());
+			assertNull("should have null message", testMsg.getMessage());
+			assertEquals("should have correct tpcopid", "TPCOpId", testMsg.getTpcOpId());
+
+			testInputStream = new ByteArrayInputStream(XML2PCabort.getBytes("UTF-8"));
+			testMsg = new KVMessage(testInputStream);
+			assertEquals("should have correct msgType", "abort", testMsg.getMsgType());
+			assertNull("should have null key", testMsg.getKey());
+			assertNull("should have null value", testMsg.getValue());
+			assertEquals("should have correct msg", "MSG", testMsg.getMessage());
+			assertEquals("should have correct tpcopid", "TPCOpId", testMsg.getTpcOpId());
+			
+			testInputStream = new ByteArrayInputStream(XML2PCdecideCommit.getBytes("UTF-8"));
+			testMsg = new KVMessage(testInputStream);
+			assertEquals("should have correct msgType", "commit", testMsg.getMsgType());
+			assertNull("should have null key", testMsg.getKey());
+			assertNull("should have null value", testMsg.getValue());
+			assertNull("should have null message", testMsg.getMessage());
+			assertEquals("should have correct tpcopid", "TPCOpId", testMsg.getTpcOpId());
+
+			testInputStream = new ByteArrayInputStream(XML2PCdecideAbort.getBytes("UTF-8"));
+			testMsg = new KVMessage(testInputStream);
+			assertEquals("should have correct msgType", "abort", testMsg.getMsgType());
+			assertNull("should have null key", testMsg.getKey());
+			assertNull("should have null value", testMsg.getValue());
+			assertNull("should have null message", testMsg.getMessage());
+			assertEquals("should have correct tpcopid", "TPCOpId", testMsg.getTpcOpId());
+			
+			testInputStream = new ByteArrayInputStream(XML2PCack.getBytes("UTF-8"));
+			testMsg = new KVMessage(testInputStream);
+			assertEquals("should have correct msgType", "ack", testMsg.getMsgType());
+			assertNull("should have null key", testMsg.getKey());
+			assertNull("should have null value", testMsg.getValue());
+			assertNull("should have null message", testMsg.getMessage());
+			assertEquals("should have correct tpcopid", "TPCOpId", testMsg.getTpcOpId());
+			
+			testInputStream = new ByteArrayInputStream(XML2PCregister.getBytes("UTF-8"));
+			testMsg = new KVMessage(testInputStream);
+			assertEquals("should have correct msgType", "register", testMsg.getMsgType());
+			assertNull("should have null key", testMsg.getKey());
+			assertNull("should have null value", testMsg.getValue());
+			assertEquals("should have correct msg", "MSG", testMsg.getMessage());
+			assertNull("should have null TpcOpId", testMsg.getTpcOpId());
+			
+			testInputStream = new ByteArrayInputStream(XML2PCignoreNext.getBytes("UTF-8"));
+			testMsg = new KVMessage(testInputStream);
+			assertEquals("should have correct msgType", "ignoreNext", testMsg.getMsgType());
+			assertNull("should have null key", testMsg.getKey());
+			assertNull("should have null value", testMsg.getValue());
+			assertNull("should have null message", testMsg.getMessage());
+			assertNull("should have null TpcOpId", testMsg.getTpcOpId());
+		} catch (Exception e) {
+			fail("an exception was thrown when it shouldn't have been");
+		}
+	}
+	
+	public void test2PCtoXML() {
+		try {
+			DocumentBuilder builder;
+			Document doc;
+			ByteArrayInputStream input;
+			String xmlStr;
+			KVMessage KV;
+			Element KVElement;
+			
+			KV = new KVMessage("putreq");
+			KV.setKey("KEY");
+			KV.setValue("VAL");
+			//KV.setMessage("MSG");
+			KV.setTpcOpId("TPCOpId");
+			xmlStr = KV.toXML();
+			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			input = new ByteArrayInputStream(xmlStr.getBytes("UTF-8"));
+			//parse the xml that toXML made, done similar as the input stream constructor so I assume that wors which I have tested before this
+			doc = builder.parse(input);
+			KVElement = (Element) doc.getElementsByTagName("KVMessage").item(0);			
+			assertEquals("Should contain a single KVMessage", 1, doc.getElementsByTagName("KVMessage").getLength());
+			assertEquals("Should have same msgType", "putreq", KVElement.getAttribute("type"));
+			assertEquals("Should contain a single key", 1, KVElement.getElementsByTagName("Key").getLength());
+			assertEquals("Should have same key", "KEY", KVElement.getElementsByTagName("Key").item(0).getTextContent());
+			//assertEquals("Should contain no value", 0, KVElement.getElementsByTagName("Value").getLength());
+			assertEquals("Should have same value", "VAL", KVElement.getElementsByTagName("Value").item(0).getTextContent());
+			assertEquals("Should contain no message", 0, KVElement.getElementsByTagName("Message").getLength());
+			//assertEquals("Should have same message", "MSG", KVElement.getElementsByTagName("Message").item(0).getTextContent());
+			//assertEquals("Should contain no TPCOpId", 0, KVElement.getElementsByTagName("TPCOpId").getLength());
+			assertEquals("Should have same TPCOpId", "TPCOpId", KVElement.getElementsByTagName("TPCOpId").item(0).getTextContent());
+			
+			KV = new KVMessage("delreq");
+			KV.setKey("KEY");
+			//KV.setValue("VAL");
+			//KV.setMessage("MSG");
+			KV.setTpcOpId("TPCOpId");
+			xmlStr = KV.toXML();
+			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			input = new ByteArrayInputStream(xmlStr.getBytes("UTF-8"));
+			//parse the xml that toXML made, done similar as the input stream constructor so I assume that wors which I have tested before this
+			doc = builder.parse(input);
+			KVElement = (Element) doc.getElementsByTagName("KVMessage").item(0);			
+			assertEquals("Should contain a single KVMessage", 1, doc.getElementsByTagName("KVMessage").getLength());
+			assertEquals("Should have same msgType", "delreq", KVElement.getAttribute("type"));
+			//assertEquals("Should contain no key", 0, KVElement.getElementsByTagName("Key").getLength());
+			assertEquals("Should have same key", "KEY", KVElement.getElementsByTagName("Key").item(0).getTextContent());
+			assertEquals("Should contain no value", 0, KVElement.getElementsByTagName("Value").getLength());
+			//assertEquals("Should have same value", "VAL", KVElement.getElementsByTagName("Value").item(0).getTextContent());
+			assertEquals("Should contain no message", 0, KVElement.getElementsByTagName("Message").getLength());
+			//assertEquals("Should have same message", "MSG", KVElement.getElementsByTagName("Message").item(0).getTextContent());
+			//assertEquals("Should contain no TPCOpId", 0, KVElement.getElementsByTagName("TPCOpId").getLength());
+			assertEquals("Should have same TPCOpId", "TPCOpId", KVElement.getElementsByTagName("TPCOpId").item(0).getTextContent());
+			
+			KV = new KVMessage("ready");
+			//KV.setKey("KEY");
+			//KV.setValue("VAL");
+			//KV.setMessage("MSG");
+			KV.setTpcOpId("TPCOpId");
+			xmlStr = KV.toXML();
+			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			input = new ByteArrayInputStream(xmlStr.getBytes("UTF-8"));
+			//parse the xml that toXML made, done similar as the input stream constructor so I assume that wors which I have tested before this
+			doc = builder.parse(input);
+			KVElement = (Element) doc.getElementsByTagName("KVMessage").item(0);			
+			assertEquals("Should contain a single KVMessage", 1, doc.getElementsByTagName("KVMessage").getLength());
+			assertEquals("Should have same msgType", "ready", KVElement.getAttribute("type"));
+			assertEquals("Should contain no key", 0, KVElement.getElementsByTagName("Key").getLength());
+			//assertEquals("Should have same key", "KEY", KVElement.getElementsByTagName("Key").item(0).getTextContent());
+			assertEquals("Should contain no value", 0, KVElement.getElementsByTagName("Value").getLength());
+			//assertEquals("Should have same value", "VAL", KVElement.getElementsByTagName("Value").item(0).getTextContent());
+			assertEquals("Should contain no message", 0, KVElement.getElementsByTagName("Message").getLength());
+			//assertEquals("Should have same message", "MSG", KVElement.getElementsByTagName("Message").item(0).getTextContent());
+			//assertEquals("Should contain no TPCOpId", 0, KVElement.getElementsByTagName("TPCOpId").getLength());
+			assertEquals("Should have same TPCOpId", "TPCOpId", KVElement.getElementsByTagName("TPCOpId").item(0).getTextContent());
+			
+			KV = new KVMessage("abort");
+			//KV.setKey("KEY");
+			//KV.setValue("VAL");
+			KV.setMessage("MSG");
+			KV.setTpcOpId("TPCOpId");
+			xmlStr = KV.toXML();
+			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			input = new ByteArrayInputStream(xmlStr.getBytes("UTF-8"));
+			//parse the xml that toXML made, done similar as the input stream constructor so I assume that wors which I have tested before this
+			doc = builder.parse(input);
+			KVElement = (Element) doc.getElementsByTagName("KVMessage").item(0);			
+			assertEquals("Should contain a single KVMessage", 1, doc.getElementsByTagName("KVMessage").getLength());
+			assertEquals("Should have same msgType", "abort", KVElement.getAttribute("type"));
+			assertEquals("Should contain no key", 0, KVElement.getElementsByTagName("Key").getLength());
+			//assertEquals("Should have same key", "KEY", KVElement.getElementsByTagName("Key").item(0).getTextContent());
+			assertEquals("Should contain no value", 0, KVElement.getElementsByTagName("Value").getLength());
+			//assertEquals("Should have same value", "VAL", KVElement.getElementsByTagName("Value").item(0).getTextContent());
+			//assertEquals("Should contain no message", 0, KVElement.getElementsByTagName("Message").getLength());
+			assertEquals("Should have same message", "MSG", KVElement.getElementsByTagName("Message").item(0).getTextContent());
+			//assertEquals("Should contain no TPCOpId", 0, KVElement.getElementsByTagName("TPCOpId").getLength());
+			assertEquals("Should have same TPCOpId", "TPCOpId", KVElement.getElementsByTagName("TPCOpId").item(0).getTextContent());
+			
+			KV = new KVMessage("commit");
+			//KV.setKey("KEY");
+			//KV.setValue("VAL");
+			//KV.setMessage("MSG");
+			KV.setTpcOpId("TPCOpId");
+			xmlStr = KV.toXML();
+			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			input = new ByteArrayInputStream(xmlStr.getBytes("UTF-8"));
+			//parse the xml that toXML made, done similar as the input stream constructor so I assume that wors which I have tested before this
+			doc = builder.parse(input);
+			KVElement = (Element) doc.getElementsByTagName("KVMessage").item(0);			
+			assertEquals("Should contain a single KVMessage", 1, doc.getElementsByTagName("KVMessage").getLength());
+			assertEquals("Should have same msgType", "commit", KVElement.getAttribute("type"));
+			assertEquals("Should contain no key", 0, KVElement.getElementsByTagName("Key").getLength());
+			//assertEquals("Should have same key", "KEY", KVElement.getElementsByTagName("Key").item(0).getTextContent());
+			assertEquals("Should contain no value", 0, KVElement.getElementsByTagName("Value").getLength());
+			//assertEquals("Should have same value", "VAL", KVElement.getElementsByTagName("Value").item(0).getTextContent());
+			assertEquals("Should contain no message", 0, KVElement.getElementsByTagName("Message").getLength());
+			//assertEquals("Should have same message", "MSG", KVElement.getElementsByTagName("Message").item(0).getTextContent());
+			//assertEquals("Should contain no TPCOpId", 0, KVElement.getElementsByTagName("TPCOpId").getLength());
+			assertEquals("Should have same TPCOpId", "TPCOpId", KVElement.getElementsByTagName("TPCOpId").item(0).getTextContent());
+			
+			KV = new KVMessage("abort");
+			//KV.setKey("KEY");
+			//KV.setValue("VAL");
+			//KV.setMessage("MSG");
+			KV.setTpcOpId("TPCOpId");
+			xmlStr = KV.toXML();
+			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			input = new ByteArrayInputStream(xmlStr.getBytes("UTF-8"));
+			//parse the xml that toXML made, done similar as the input stream constructor so I assume that wors which I have tested before this
+			doc = builder.parse(input);
+			KVElement = (Element) doc.getElementsByTagName("KVMessage").item(0);			
+			assertEquals("Should contain a single KVMessage", 1, doc.getElementsByTagName("KVMessage").getLength());
+			assertEquals("Should have same msgType", "abort", KVElement.getAttribute("type"));
+			assertEquals("Should contain no key", 0, KVElement.getElementsByTagName("Key").getLength());
+			//assertEquals("Should have same key", "KEY", KVElement.getElementsByTagName("Key").item(0).getTextContent());
+			assertEquals("Should contain no value", 0, KVElement.getElementsByTagName("Value").getLength());
+			//assertEquals("Should have same value", "VAL", KVElement.getElementsByTagName("Value").item(0).getTextContent());
+			assertEquals("Should contain no message", 0, KVElement.getElementsByTagName("Message").getLength());
+			//assertEquals("Should have same message", "MSG", KVElement.getElementsByTagName("Message").item(0).getTextContent());
+			//assertEquals("Should contain no TPCOpId", 0, KVElement.getElementsByTagName("TPCOpId").getLength());
+			assertEquals("Should have same TPCOpId", "TPCOpId", KVElement.getElementsByTagName("TPCOpId").item(0).getTextContent());
+			
+			KV = new KVMessage("ack");
+			//KV.setKey("KEY");
+			//KV.setValue("VAL");
+			//KV.setMessage("MSG");
+			KV.setTpcOpId("TPCOpId");
+			xmlStr = KV.toXML();
+			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			input = new ByteArrayInputStream(xmlStr.getBytes("UTF-8"));
+			//parse the xml that toXML made, done similar as the input stream constructor so I assume that wors which I have tested before this
+			doc = builder.parse(input);
+			KVElement = (Element) doc.getElementsByTagName("KVMessage").item(0);			
+			assertEquals("Should contain a single KVMessage", 1, doc.getElementsByTagName("KVMessage").getLength());
+			assertEquals("Should have same msgType", "ack", KVElement.getAttribute("type"));
+			assertEquals("Should contain no key", 0, KVElement.getElementsByTagName("Key").getLength());
+			//assertEquals("Should have same key", "KEY", KVElement.getElementsByTagName("Key").item(0).getTextContent());
+			assertEquals("Should contain no value", 0, KVElement.getElementsByTagName("Value").getLength());
+			//assertEquals("Should have same value", "VAL", KVElement.getElementsByTagName("Value").item(0).getTextContent());
+			assertEquals("Should contain no message", 0, KVElement.getElementsByTagName("Message").getLength());
+			//assertEquals("Should have same message", "MSG", KVElement.getElementsByTagName("Message").item(0).getTextContent());
+			//assertEquals("Should contain no TPCOpId", 0, KVElement.getElementsByTagName("TPCOpId").getLength());
+			assertEquals("Should have same TPCOpId", "TPCOpId", KVElement.getElementsByTagName("TPCOpId").item(0).getTextContent());
+			
+			KV = new KVMessage("register");
+			//KV.setKey("KEY");
+			//KV.setValue("VAL");
+			KV.setMessage("MSG");
+			//KV.setTpcOpId("TPCOpId");
+			xmlStr = KV.toXML();
+			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			input = new ByteArrayInputStream(xmlStr.getBytes("UTF-8"));
+			//parse the xml that toXML made, done similar as the input stream constructor so I assume that wors which I have tested before this
+			doc = builder.parse(input);
+			KVElement = (Element) doc.getElementsByTagName("KVMessage").item(0);			
+			assertEquals("Should contain a single KVMessage", 1, doc.getElementsByTagName("KVMessage").getLength());
+			assertEquals("Should have same msgType", "register", KVElement.getAttribute("type"));
+			assertEquals("Should contain no key", 0, KVElement.getElementsByTagName("Key").getLength());
+			//assertEquals("Should have same key", "KEY", KVElement.getElementsByTagName("Key").item(0).getTextContent());
+			assertEquals("Should contain no value", 0, KVElement.getElementsByTagName("Value").getLength());
+			//assertEquals("Should have same value", "VAL", KVElement.getElementsByTagName("Value").item(0).getTextContent());
+			//assertEquals("Should contain no message", 0, KVElement.getElementsByTagName("Message").getLength());
+			assertEquals("Should have same message", "MSG", KVElement.getElementsByTagName("Message").item(0).getTextContent());
+			assertEquals("Should contain no TPCOpId", 0, KVElement.getElementsByTagName("TPCOpId").getLength());
+			//assertEquals("Should have same TPCOpId", "TPCOpId", KVElement.getElementsByTagName("TPCOpId").item(0).getTextContent());
+			
+			KV = new KVMessage("ignoreNext");
+			//KV.setKey("KEY");
+			//KV.setValue("VAL");
+			//KV.setMessage("MSG");
+			//KV.setTpcOpId("TPCOpId");
+			xmlStr = KV.toXML();
+			builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+			input = new ByteArrayInputStream(xmlStr.getBytes("UTF-8"));
+			//parse the xml that toXML made, done similar as the input stream constructor so I assume that wors which I have tested before this
+			doc = builder.parse(input);
+			KVElement = (Element) doc.getElementsByTagName("KVMessage").item(0);			
+			assertEquals("Should contain a single KVMessage", 1, doc.getElementsByTagName("KVMessage").getLength());
+			assertEquals("Should have same msgType", "ignoreNext", KVElement.getAttribute("type"));
+			assertEquals("Should contain no key", 0, KVElement.getElementsByTagName("Key").getLength());
+			//assertEquals("Should have same key", "KEY", KVElement.getElementsByTagName("Key").item(0).getTextContent());
+			assertEquals("Should contain no value", 0, KVElement.getElementsByTagName("Value").getLength());
+			//assertEquals("Should have same value", "VAL", KVElement.getElementsByTagName("Value").item(0).getTextContent());
+			assertEquals("Should contain no message", 0, KVElement.getElementsByTagName("Message").getLength());
+			//assertEquals("Should have same message", "MSG", KVElement.getElementsByTagName("Message").item(0).getTextContent());
+			assertEquals("Should contain no TPCOpId", 0, KVElement.getElementsByTagName("TPCOpId").getLength());
+			//assertEquals("Should have same TPCOpId", "TPCOpId", KVElement.getElementsByTagName("TPCOpId").item(0).getTextContent());
+			
+		} catch (KVException e) {
+			System.out.println(e.getMsg().getMessage());
+			fail("a KVException was thrown when it shouldn't have been");
+		} catch (Exception e) {
+			fail("an exception was thrown when it shouldn't have been");
+		}
+	}
 }
