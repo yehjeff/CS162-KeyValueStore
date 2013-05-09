@@ -196,6 +196,7 @@ public class TestTPCMaster extends TestCase {
 		}
 	}
 	
+<<<<<<< HEAD
 	@Test
 	public void testHandleGet3() {
 		server = "localhost";

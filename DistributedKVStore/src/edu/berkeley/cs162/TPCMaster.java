@@ -383,7 +383,7 @@ public class TPCMaster {
 					KVMessage abortMsg = new KVMessage("abort");
 					sendDecision(id1, abortMsg);
 					sendDecision(id2, abortMsg);
-					exceptionMsg = new KVMessage ("resp", "Does not exist");
+					exceptionMsg = new KVMessage ("resp",abortMsg.getMessage());
 					throw new KVException(msg);
 				}
 				info1.closeHost(slaveSocket1);
@@ -445,15 +445,14 @@ public class TPCMaster {
 			KVMessage responseMsg, exceptionMsg;
 			info1 = findFirstReplica(key);
 			masterCache.getWriteLock(key).lock();
-
-			value = masterCache.get(key);
-			if (value != null)
-				return value;
-
-			slaveSocket = info1.connectHost();
-			slaveSocket.setSoTimeout(TIMEOUT_MILLISECONDS);
-			msg.sendMessage(slaveSocket);
 			try {
+				value = masterCache.get(key);
+				if (value != null)
+					return value;
+
+				slaveSocket = info1.connectHost();
+				slaveSocket.setSoTimeout(TIMEOUT_MILLISECONDS);
+				msg.sendMessage(slaveSocket);
 				responseMsg = new KVMessage(slaveSocket.getInputStream());
 				if (responseMsg.getMessage() != null && responseMsg.getMessage().equals("Does not exist")){
 					exceptionMsg = new KVMessage("resp", "Does not exist");
@@ -470,11 +469,12 @@ public class TPCMaster {
 				}
 				key = msg.getKey();
 				info2 = findSuccessor(info1);
-				slaveSocket = info2.connectHost();
-
-				slaveSocket.setSoTimeout(TIMEOUT_MILLISECONDS);
-				msg.sendMessage(slaveSocket);
 				try {
+					slaveSocket = info2.connectHost();
+	
+					slaveSocket.setSoTimeout(TIMEOUT_MILLISECONDS);
+					msg.sendMessage(slaveSocket);
+				
 					responseMsg = new KVMessage(slaveSocket.getInputStream());
 					if (responseMsg.getMessage() != null && responseMsg.getMessage().equals("Does not exist")){
 						exceptionMsg = new KVMessage("resp", "Does not exist");
