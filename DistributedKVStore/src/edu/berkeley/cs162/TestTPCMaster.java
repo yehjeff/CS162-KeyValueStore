@@ -21,6 +21,7 @@ public class TestTPCMaster extends TestCase {
 	SocketServer masterserver = new SocketServer(server, port);
 	SocketServer slaveserver1 = new SocketServer(server);
 	SocketServer slaveserver2 = new SocketServer(server);
+	NetworkHandler handler = new KVClientHandler(master);
 	TPCMasterHandler handler1 = new TPCMasterHandler(slave1, 1);
 	TPCMasterHandler handler2 = new TPCMasterHandler(slave2, 2);
 	
@@ -33,7 +34,6 @@ public class TestTPCMaster extends TestCase {
 		public void run() {
 			master.run();
 			System.out.println("Binding Master:");
-			NetworkHandler handler = new KVClientHandler(master);
 			masterserver.addHandler(handler);
 			try {
 				masterserver.connect();
@@ -45,7 +45,8 @@ public class TestTPCMaster extends TestCase {
 	}
 	public void closeMaster() {
 		System.out.println("Closing master");
-		master.stop();
+		masterserver.stop();
+		handler.stop();
 		try {
 		Thread.sleep(10000);
 		} catch (Exception e){
@@ -124,7 +125,7 @@ public class TestTPCMaster extends TestCase {
 		slaveserver2.stop();
 		handler2.stop();
 		try {
-		Thread.sleep(10000);
+		//Thread.sleep(10000);
 		} catch (Exception e){
 		}
 	}
@@ -165,11 +166,12 @@ public class TestTPCMaster extends TestCase {
 		System.out.println("handleget2");
 
 		try {
+			Thread.sleep(10000);
 			//test get on key that doesn't exist
 			client.get("supah");
-		}
-		catch (KVException e){
-			String message = e.getMsg().getMessage();
+		} catch (InterruptedException e1) {
+		} catch (KVException e2){
+			String message = e2.getMsg().getMessage();
 			System.out.println(message);
 			assertTrue(message.equals("Does not exist"));
 		} finally {
