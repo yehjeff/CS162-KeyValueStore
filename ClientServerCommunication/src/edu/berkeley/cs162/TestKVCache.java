@@ -157,13 +157,64 @@ public class TestKVCache extends TestCase {
 		assertTrue(getReturn != null);
 		assertTrue(getReturn.equals("value7"));
 		
+	}
+
+	public void testEvictionPolicy2(){
+		//to ensure kv pairs are in the same set, have a single-set cache
+		KVCache cache = new KVCache(1, 4);
+		String val;
+		//fill up the set first
+		cache.put("key1", "value1");
+		cache.put("key2", "value2");
+		cache.put("key3", "value3");
+		cache.put("key4", "value4");
+		cache.print2c("asdf");
+		//1 2 3 4
+		cache.put("key5", "value5");
+		cache.get("key5");
+		cache.get("key3");
+		//2 3. 4 5.
+		assertTrue(cache.get("key5").equals("value5"));
+		assertTrue(cache.get("key2").equals("value2"));
+		//2. 3. 4 5.
+		cache.put("key4", "value4b");
+		//2. 3. 5. 4b
+		assertTrue(cache.get("key7")==null);
+		cache.put("key2", "value2b");
+		//3. 5. 4b 2b
+		cache.print2c("asdf");
+		cache.del("key5");
+		cache.print2c("asdf");
+		//3. 4b 2b
+		cache.put("key6", "value6");
+		//3. 4b 2b 6
+		cache.put("key7", "value7");
+		//2b 6 3 7
+		val = cache.get("key6");	//del later
+		cache.print2c("asdf");
+		assertTrue(cache.get("key2").equals("value2b"));
+		assertTrue(val.equals("value6"));	//del later
 		
 		
-		
-		
+		cache.put("key8", "value8");
+		//6 3 7 8
+		val = cache.get("key6");
+		assertTrue(val.equals("value6"));
+		//6. 3 7 8
+		cache.put("key9", "value9");
+		cache.put("key10", "value10");
+		cache.put("key11", "value11");
+		cache.get("key6");
+		cache.put("key12", "value12");
+		cache.put("key13", "value13");
+		cache.put("key14", "value14");
+		cache.get("key6");
+		cache.put("key15", "value15");
+		cache.put("key16", "value16");
+		cache.put("key17", "value17");
+		assertTrue(cache.get("key6").equals("value6"));
 		
 	}
-	
 	
 	public void testGetWriteLock() {
 		// idk lol
@@ -250,5 +301,5 @@ public class TestKVCache extends TestCase {
 		}
 
 	}
-	
+
 }

@@ -81,6 +81,13 @@ public class KVCache implements KeyValueInterface {
 		// TODO: Implement Me!
 	}
 
+	public void print2c(String key) {
+		int setID = this.getSetId(key);
+		for (Entry e : set2CQueues[setID]) {
+			System.out.println(e.getKey() + "," + e.getValue() + "," + e.getReferenceBit() + "," + e.isValid());	
+		}
+		System.out.println();
+	}
 
 	/**
 	 * Retrieves an entry from the cache.
@@ -186,9 +193,10 @@ public class KVCache implements KeyValueInterface {
 			int setId = this.getSetId(key);
 			for (int i = 0; i < this.maxElemsPerSet; i++){
 				Entry entry = this.sets[setId][i];
-				if (entry.isValid() && entry.getKey().equals(key))
+				if (entry.isValid() && entry.getKey().equals(key)) {
 					entry.turnOffValidBit();
 					this.set2CQueues[setId].remove(entry);
+				}
 			} 
 		} finally {
 			// Must be called before returning

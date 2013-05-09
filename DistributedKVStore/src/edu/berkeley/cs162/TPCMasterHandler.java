@@ -309,9 +309,7 @@ public class TPCMasterHandler implements NetworkHandler {
 		master.close();
 		AutoGrader.agRegistrationFinished(slaveID);
 	}
-	
-	
-	
+
 	public static void checkKey(String key) throws KVException {
 		KVMessage exceptMsg = new KVMessage("resp");
 		if (key == null) {
