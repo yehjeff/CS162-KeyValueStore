@@ -510,7 +510,7 @@ public class TPCMaster {
 		//String pattern = "[0-9]+@("+ validIpAddressRegex + "|" + validHostnameRegex+"):[0-9]+";
 		Pattern p = Pattern.compile(pattern);
 	    Matcher m = p.matcher(regMsg);
-
+	    System.out.println(msg.getMessage());
 	    if (!m.matches()) {
 			KVMessage exceptMsg = new KVMessage("resp");
 			exceptMsg.setMessage("Registration Error: Received unparseable slave information");
