@@ -60,7 +60,7 @@ public class TPCLog {
 	 */
 	public TPCLog(String logPath, KVServer kvServer) {
 		this.logPath = logPath;
-		entries = null;
+		entries = new ArrayList<KVMessage>();
 		this.kvServer = kvServer;
 	}
 

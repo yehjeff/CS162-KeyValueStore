@@ -12,25 +12,21 @@ import junit.framework.TestCase;
 
 public class TestTPCMaster extends TestCase {
 	//setting up a server, client, slaves...
-	String server = "localhost";
-	int port = 8080;			
+	String server;
+	int port;			
 
-	TPCMaster master = new TPCMaster(2);
-	KVServer slave1 = new KVServer(10, 5);
-	KVServer slave2 = new KVServer(10, 5);
-	SocketServer masterserver = new SocketServer(server, port);
-	SocketServer slaveserver1 = new SocketServer(server);
-	SocketServer slaveserver2 = new SocketServer(server);
-	NetworkHandler handler = new KVClientHandler(master);
-	TPCMasterHandler handler1 = new TPCMasterHandler(slave1, 1);
-	TPCMasterHandler handler2 = new TPCMasterHandler(slave2, 2);
+	TPCMaster master;
+	KVServer slave1;
+	KVServer slave2;
+	SocketServer masterserver;
+	SocketServer slaveserver1;
+	SocketServer slaveserver2;
+	NetworkHandler handler;
+	TPCMasterHandler handler1;
+	TPCMasterHandler handler2;
 	
 	public class runMaster implements Runnable {
-		Thread t;
-		runMaster(){
-			t = new Thread(this);
-			t.start();
-		}
+		
 		public void run() {
 			master.run();
 			System.out.println("Binding Master:");
@@ -46,7 +42,7 @@ public class TestTPCMaster extends TestCase {
 	public void closeMaster() {
 		System.out.println("Closing master");
 		masterserver.stop();
-		handler.stop();
+		master.stop();
 		try {
 		Thread.sleep(10000);
 		} catch (Exception e){
@@ -55,12 +51,11 @@ public class TestTPCMaster extends TestCase {
 
 	
 	public class runSlaveServer implements Runnable {
-		Thread t;
+	
 		int _id;
 		runSlaveServer(int id){
 			_id = id;
-			t = new Thread(this);
-			t.start();
+		
 		}
 		public void run() {
 			try {
@@ -77,11 +72,7 @@ public class TestTPCMaster extends TestCase {
 		}
 	}
 	public class runServers implements Runnable {
-		Thread t;
-		runServers(){
-			t = new Thread(this);
-			t.start();
-		}
+	
 		public void run() {
 			startServers();
 		}
@@ -97,12 +88,12 @@ public class TestTPCMaster extends TestCase {
 		String logPath2 = 2 + "@" + slaveserver2.getHostname();
 		TPCLog tpcLog2 = new TPCLog(logPath2, slave2);
 		try {
-			tpcLog1.rebuildKeyServer();
+//			tpcLog1.rebuildKeyServer();
 			handler1.setTPCLog(tpcLog1);
 			slaveserver1.connect();
 			handler1.registerWithMaster(server, slaveserver1);
 
-			tpcLog2.rebuildKeyServer();
+//			tpcLog2.rebuildKeyServer();
 			handler2.setTPCLog(tpcLog2);
 			slaveserver2.connect();
 			handler2.registerWithMaster(server, slaveserver2);
@@ -112,10 +103,12 @@ public class TestTPCMaster extends TestCase {
 		}
 		
 		System.out.println("Starting SlaveServer at " + slaveserver1.getHostname() + ":" + slaveserver1.getPort());
-		Thread t1 = new Thread(new runSlaveServer(1));
+		new Thread(new runSlaveServer(1)).start();
+		
 
 		System.out.println("Starting SlaveServer at " + slaveserver2.getHostname() + ":" + slaveserver2.getPort());
-		Thread t2 = new Thread(new runSlaveServer(2));
+		new Thread(new runSlaveServer(2)).start();
+		
 	}
 	public void closeServers() {
 		System.out.println("Closing servers");
@@ -133,14 +126,26 @@ public class TestTPCMaster extends TestCase {
 
 	@Test
 	public void testHandleGet1() {
-		new runMaster();
-		new runServers();
+		server = "localhost";
+		port = 8080;			
+
+		master = new TPCMaster(2);
+		slave1 = new KVServer(10, 5);
+		slave2 = new KVServer(10, 5);
+		masterserver = new SocketServer(server, port);
+		slaveserver1 = new SocketServer(server);
+		slaveserver2 = new SocketServer(server);
+		handler = new KVClientHandler(master);
+		handler1 = new TPCMasterHandler(slave1, 1);
+		handler2 = new TPCMasterHandler(slave2, 2);
+		new Thread(new runMaster()).start();
+		new Thread(new runServers()).start();
 		KVClient client = new KVClient(server, port);
 		String val = null;
 		System.out.println("handleget1");
 		
 		try {
-			Thread.sleep(10000);
+			Thread.sleep(20000);
 			client.put("fuzzy", "wuzzy");
 			System.out.println("after put");
 			val = client.get("fuzzy");
@@ -157,11 +162,24 @@ public class TestTPCMaster extends TestCase {
 			closeMaster();
 		}
 	}
-	
+
 	@Test
 	public void testHandleGet2() {
-		new runMaster();
-		new runServers();
+		server = "localhost";
+		port = 7070;			
+
+		master = new TPCMaster(2);
+		slave1 = new KVServer(10, 5);
+		slave2 = new KVServer(10, 5);
+		masterserver = new SocketServer(server, port);
+		slaveserver1 = new SocketServer(server);
+		slaveserver2 = new SocketServer(server);
+		handler = new KVClientHandler(master);
+		handler1 = new TPCMasterHandler(slave1, 1);
+		handler2 = new TPCMasterHandler(slave2, 2);
+		
+		new Thread(new runMaster()).start();
+		new Thread(new runServers()).start();
 		KVClient client = new KVClient(server, port);	
 		System.out.println("handleget2");
 

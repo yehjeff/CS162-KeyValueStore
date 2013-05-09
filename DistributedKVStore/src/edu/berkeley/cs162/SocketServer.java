@@ -154,7 +154,7 @@ public class SocketServer {
 		}
 	}
 
-	protected void finalize(){
+	public void finalize(){
 		closeSocket();
 	}
 

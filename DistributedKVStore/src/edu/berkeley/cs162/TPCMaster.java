@@ -464,7 +464,10 @@ public class TPCMaster {
 				info1.closeHost(slaveSocket);
 				return value;
 			}catch (KVException e1){
-
+				if (e1.getMsg().getMessage() != null && e1.getMsg().getMessage().equals("Does not exist")){
+					exceptionMsg = new KVMessage("resp", "Does not exist");
+					throw new KVException(exceptionMsg);
+				}
 				key = msg.getKey();
 				info2 = findSuccessor(info1);
 				slaveSocket = info2.connectHost();
@@ -481,15 +484,20 @@ public class TPCMaster {
 					masterCache.put(key, value);
 					return value;
 				} catch (KVException e2){
+					if (e2.getMsg().getMessage() != null && e2.getMsg().getMessage().equals("Does not exist")){
+						exceptionMsg = new KVMessage("resp", "Does not exist");
+						throw new KVException(exceptionMsg);
+					}
 					exceptionMsg = new KVMessage("resp","@" + info1.getSlaveID() + ":=" + e1.getMsg().getMessage() + "@" + info2.getSlaveID() + "\n:=" + e2.getMsg().getMessage());
 					throw new KVException(exceptionMsg);
 				}
 			}finally {
 				masterCache.getWriteLock(key).unlock();
 			}
-
-		} catch (Exception e){
-			e.printStackTrace();
+		} catch (KVException e1) {
+			throw e1;
+		}catch (Exception e2){
+			e2.printStackTrace();
 		} finally {
 			AutoGrader.aghandleGetFinished();
 		}
@@ -519,6 +527,7 @@ public class TPCMaster {
 	}
 
 	public void stop(){
+		regServer.finalize();
 	}
 	
 	
