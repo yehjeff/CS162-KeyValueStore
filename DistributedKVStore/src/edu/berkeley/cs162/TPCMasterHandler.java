@@ -231,6 +231,7 @@ public class TPCMasterHandler implements NetworkHandler {
 			AutoGrader.agSecondPhaseStarted(slaveID, origMsg, origAborted);
 
 			if (masterResp.getMsgType().equals("commit")){
+				System.out.println("handleMasterResponse: " + originalMessage.getMsgType());
 				if (originalMessage.getMsgType().equals("putreq")){
 					String key = originalMessage.getKey();
 					String value = originalMessage.getValue();
