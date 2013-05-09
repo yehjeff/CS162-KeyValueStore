@@ -177,5 +177,44 @@ public class KVClient implements KeyValueInterface {
 		catch (KVException e){
 			throw e;
 		}
+	}
+	
+	public void reset(String server, int port) {
+		this.server = server;
+		this.port = port;
+	}
+	
+	public void ignoreNext(String server, int port) throws KVException {
+		try{
+			String oldserver = this.server;
+			int oldport = this.port;
+			// temporarily set server & port to slaveserver's info
+			reset(server, port);
+			Socket sock = connectHost();
+			KVMessage msg = new KVMessage("ignoreNext");
+			msg.sendMessage(sock);
+			InputStream inputStream = sock.getInputStream();   
+			KVMessage responseMsg = new KVMessage(inputStream);
+			closeHost(sock);
+			this.server = oldserver;
+			this.port = oldport;
+			
+			KVMessage exceptMsg = new KVMessage("resp");
+			exceptMsg.setMessage(responseMsg.getMessage());
+			
+			// Throw an exception if the command wasn't successful
+			if (!exceptMsg.getMessage().equals("Success") ){
+				throw new KVException(exceptMsg);
+			}
+		}
+		catch (IOException f){
+			KVMessage exceptMsg = new KVMessage("resp");
+			exceptMsg.setMessage("Network Error: could not send data");
+			throw new KVException(exceptMsg);
+		}
+		catch (KVException e){
+			throw e;
+		}
 	}	
+	
 }

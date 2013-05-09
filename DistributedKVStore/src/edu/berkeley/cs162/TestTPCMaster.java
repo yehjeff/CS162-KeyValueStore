@@ -198,7 +198,6 @@ public class TestTPCMaster extends TestCase {
 		}
 	}
 	
-	
 	@Test
 	public void testIsParseable1() {
 		TPCMaster master = new TPCMaster(2);
