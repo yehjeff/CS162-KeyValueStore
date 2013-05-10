@@ -33,6 +33,7 @@ package edu.berkeley.cs162;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Dictionary;
 import java.util.Enumeration;
@@ -48,6 +49,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -180,10 +182,13 @@ public class KVStore implements KeyValueInterface {
      * Replaces the contents of the store with the contents of a file
      * written by dumpToFile; the previous contents of the store are lost.
      * @param fileName the file to be read.
+     * @throws ParserConfigurationException 
+     * @throws IOException 
+     * @throws SAXException 
      */
-    public void restoreFromFile(String fileName) {
+    public void restoreFromFile(String fileName) throws ParserConfigurationException, SAXException, IOException {
         // TODO: implement me
-       	try{
+       	
     		File xmlFile = new File(fileName);
     		DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
     		Document doc = builder.parse(xmlFile);
@@ -198,8 +203,7 @@ public class KVStore implements KeyValueInterface {
     			String value = KVPairElement.getElementsByTagName("Value").item(0).getTextContent();
     			this.store.put(key, value);
     		}
-    	} catch(Exception e){
-    		System.out.println("KVStore.restoreFromFile(): Unable to read xml file");
-    	}
+    	
+    	
     }
 }
