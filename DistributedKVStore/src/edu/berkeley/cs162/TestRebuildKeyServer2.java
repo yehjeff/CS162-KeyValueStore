@@ -8,7 +8,10 @@ import junit.framework.TestCase;
 
 public class TestRebuildKeyServer2 extends TestCase {
 
-
+	HashMap<Long,TPCLog> tpcLogMap = new HashMap<Long,TPCLog>();
+	HashMap<Long,SocketServer> socketServerMap = new HashMap<Long,SocketServer>();
+	HashMap<Long,KVServer> kvServerMap = new HashMap<Long,KVServer>();
+	HashMap<Long,TPCMasterHandler> tpcMasterHandlerMap = new HashMap<Long,TPCMasterHandler>();
 	TPCMaster tpcMaster;
 	SocketServer masterSocketServer;
 	String masterHostname = null;
@@ -36,17 +39,20 @@ public class TestRebuildKeyServer2 extends TestCase {
 			System.out.println("Binding SlaveServer:");
 			KVServer keyServer = new KVServer(100, 10);
 			SocketServer server;
+			kvServerMap.put(slaveID, keyServer);
 
 			server = new SocketServer(InetAddress.getLocalHost().getHostAddress());
+			socketServerMap.put(slaveID, server);
 
 			TPCMasterHandler handler = new TPCMasterHandler(keyServer, slaveID);
-		
+			tpcMasterHandlerMap.put(slaveID, handler);
 			server.addHandler(handler);
 			server.connect();
 
 			String logPath = slaveID + "@" + server.getHostname();
 			TPCLog tpcLog = new TPCLog(logPath, keyServer);
-			
+			tpcLogMap.put(slaveID, tpcLog);
+
 			tpcLog.rebuildKeyServer();
 
 			handler.setTPCLog(tpcLog);
@@ -133,17 +139,50 @@ public class TestRebuildKeyServer2 extends TestCase {
 				fail("bad exception thrown:" + e.getMsg().getMessage());
 			}
 			try {
-			value = client.get("key5");
-			fail("key5 should have been deleted");
+				value = client.get("key5");
+				fail("key5 should have been deleted");
 			} catch (KVException e){
 				assertTrue(e.getMsg().getMessage().equals("Does not exist"));
 			}
 
-
+			masterThread.stop();slaveThread1.stop();slaveThread2.stop();
 
 
 		}catch (Exception e){
 			e.printStackTrace();
+		} finally {
+
 		}
+	}
+
+
+	public void testRebuildFailInOperation(){
+		try{			
+			masterHostname = InetAddress.getLocalHost().getHostAddress();
+			Thread masterThread = new Thread(new Runnable() { public void run() { runMaster(); } } );
+			Thread slaveThread1 = new Thread(new Runnable() { public void run() { runSlave(1); } } );
+			Thread slaveThread2 = new Thread(new Runnable() { public void run() { runSlave(2); } } );
+			masterThread.start(); slaveThread1.start(); slaveThread2.start();
+			Thread.sleep(2000);
+
+
+			KVClient client = new KVClient(masterHostname,8080);
+			/* HOW TO DO THIS IDK ??? */
+			
+			
+			
+			
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	public void stopInMilliseconds(Thread thread, long t){
+		try {
+			Thread.sleep(t);
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+		thread.stop();
 	}
 }
