@@ -312,6 +312,7 @@ public class TPCMasterHandler implements NetworkHandler {
 		AutoGrader.agRegistrationStarted(slaveID);
 
 		Socket master = new Socket(masterHostName, 9090);
+		System.out.println("Registering " + slaveID + "@" + server.getHostname() + ":" + server.getPort());
 		KVMessage regMessage = new KVMessage("register", slaveID + "@" + server.getHostname() + ":" + server.getPort());
 		regMessage.sendMessage(master);
 

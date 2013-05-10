@@ -92,6 +92,7 @@ public class TPCMaster {
 						SlaveInfo newEntry = new SlaveInfo(registerMsg.getMessage());
 						slaveInfoMap.put(slaveID, newEntry);
 					}
+					System.out.println("Successfully registered " + registerMsg.getMessage());
 					KVMessage ackMsg = new KVMessage("resp", "Successfully registered " + registerMsg.getMessage());
 					ackMsg.sendMessage(client);
 				} catch (Exception e) {

@@ -37,7 +37,7 @@ public class Client {
 		System.out.println("Start");
 		try{			
 			String three = "three";
-			String seven = "seven";
+			String seven = "a";
 			System.out.println("putting (3, 7)");
 			kc.put(three, seven);
 			
@@ -51,9 +51,12 @@ public class Client {
 			System.out.println("deleting key=3");			
 			kc.del(three);
 			System.out.println("done");
-			System.out.println("getting key=3 SHOULD CRASH NOW");			
-			value = kc.get(three);					
-			System.out.println("returned: " + value + " THIS SHOULDNT BE REACHED");
+			System.out.println("getting key=3 should throw exception");	
+			try {
+				value = kc.get(three);		
+			} catch (KVException e){
+				System.out.println("good, exception thrown");
+			}
 		}catch(Exception e){
 			e.printStackTrace();
 		}

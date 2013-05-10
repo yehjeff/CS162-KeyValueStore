@@ -40,6 +40,7 @@ public class TestRebuildKeyServer extends TestCase {
 				System.out.println("Starting Master");
 				masterserver.run();		
 			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -72,6 +73,7 @@ public class TestRebuildKeyServer extends TestCase {
 					break;
 				} 
 			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -106,9 +108,12 @@ public class TestRebuildKeyServer extends TestCase {
 			handler2.setTPCLog(tpcLog2);
 			slaveserver2.connect();
 			handler2.registerWithMaster(server, slaveserver2);
-		} catch (KVException e1) {
+		} catch (KVException e) {
+			e.printStackTrace();
 		} catch (UnknownHostException e) {
+			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		
 		System.out.println("Starting SlaveServer at " + slaveserver1.getHostname() + ":" + slaveserver1.getPort());
@@ -124,13 +129,18 @@ public class TestRebuildKeyServer extends TestCase {
 		slaveserver1 = new SocketServer("localhost");
 		slaveserver1.addHandler(handler1);
 		try {
+			slaveserver1.connect();
 			tpcLog1.rebuildKeyServer();
 			handler1.setTPCLog(tpcLog1);
-			slaveserver1.connect();
 			handler1.registerWithMaster(server, slaveserver1);
-		} catch (KVException e1) {
+
+
+		} catch (KVException e) {
+			e.printStackTrace();
 		} catch (UnknownHostException e) {
+			e.printStackTrace();
 		} catch (IOException e) {
+			e.printStackTrace();
 		}		
 		System.out.println("ReStarting SlaveServer at " + slaveserver1.getHostname() + ":" + slaveserver1.getPort());
 		new Thread(new runSlaveServer(1)).start();
@@ -146,6 +156,8 @@ public class TestRebuildKeyServer extends TestCase {
 		try {
 		//Thread.sleep(10000);
 		} catch (Exception e){
+			e.printStackTrace();
+
 		}
 	}
 	
@@ -156,6 +168,8 @@ public class TestRebuildKeyServer extends TestCase {
 		try {
 		//Thread.sleep(10000);
 		} catch (Exception e){
+			e.printStackTrace();
+
 		}
 	}
 
@@ -180,7 +194,7 @@ public class TestRebuildKeyServer extends TestCase {
 		String val = null;
 		
 		try {
-			Thread.sleep(10000);
+			Thread.sleep(2000);
 			client.put("keyA", "valA");
 			client.put("keyB", "valB");
 			client.put("keyDel", "delMe");
@@ -210,6 +224,20 @@ public class TestRebuildKeyServer extends TestCase {
 			try {
 				Thread.sleep(10000);
 				//get should find the correct key from the log of the one restarted server
+				client.put("keyA", "valA");
+				System.out.println("APutted");
+				client.put("keyB", "valB");
+				System.out.println("BPutted");
+				client.put("keyDel", "delMe");
+				System.out.println("DelPutted");
+				client.put("keyC", "valC");
+				System.out.println("CPutted");
+				client.del("keyDel");
+				System.out.println("DelDel'd");
+				client.put("keyD", "valD");
+				System.out.println("DPutted");
+				client.put("keyE", "valE");
+				System.out.println("EPutted");
 				val = client.get("keyA");
 				assertEquals("get should find correct key from recovered slave", "valA", val);
 				System.out.println("ASuccess");
@@ -239,5 +267,7 @@ public class TestRebuildKeyServer extends TestCase {
 			}
 		}
 	}
+
+	
 
 }

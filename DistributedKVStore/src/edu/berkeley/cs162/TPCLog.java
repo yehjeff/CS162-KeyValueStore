@@ -139,6 +139,7 @@ public class TPCLog {
 		// TODO:implement me
 		loadFromDisk();
 		boolean isCommit = false;
+		System.out.println("Rebuilding KVServer...");
 		for (KVMessage entry : entries) {
 			if ((entry.getMsgType().equals("putreq")) || (entry.getMsgType().equals("delreq"))) {  
 				interruptedTpcOperation = entry;
@@ -150,11 +151,11 @@ public class TPCLog {
 				if (isCommit) {
 					if (interruptedTpcOperation.getMsgType().equals("putreq")) {
 						kvServer.put(interruptedTpcOperation.getKey(), interruptedTpcOperation.getValue());
-						System.out.println("putting (" + interruptedTpcOperation.getKey() + "," + interruptedTpcOperation.getValue() + ")");
+						System.out.println("\tPut (" + interruptedTpcOperation.getKey() + "," + interruptedTpcOperation.getValue() + ")");
 					} else {
 						//otherwise interruptedTpcOperation has to be a delreq
 						kvServer.del(interruptedTpcOperation.getKey());
-						System.out.println("deleting " + interruptedTpcOperation.getKey());
+						System.out.println("\tDel (" + interruptedTpcOperation.getKey()+")");
 					}
 				}
 				interruptedTpcOperation = null;
