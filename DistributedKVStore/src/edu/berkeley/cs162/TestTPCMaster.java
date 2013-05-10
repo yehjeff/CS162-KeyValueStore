@@ -336,7 +336,7 @@ public class TestTPCMaster extends TestCase {
 			closeServers();
 			closeMaster();
 		}
-	}*/
+	}
 	
 	@Test
 	public void testHandleDel1() {
@@ -373,7 +373,7 @@ public class TestTPCMaster extends TestCase {
 			closeServers();
 			closeMaster();
 		}
-	}
+	}*/
 
 	@Test
 	public void testHandleDel2() {
@@ -399,6 +399,7 @@ public class TestTPCMaster extends TestCase {
 			System.out.println("testHandleDel2()");
 			Thread.sleep(10000);
 			client.del("poop");
+			System.out.println("It got here?");
 			fail();		//never gets here
 		} catch (KVException e1) {
 			System.out.println(e1.getMsg().getMessage());
@@ -410,7 +411,7 @@ public class TestTPCMaster extends TestCase {
 		}
 	}
 	
-	@Test
+	/**@Test
 	public void testIsParseable1() {
 		TPCMaster master = new TPCMaster(2);
 		KVMessage regMsg = null;
@@ -463,7 +464,7 @@ public class TestTPCMaster extends TestCase {
 			String message = e.getMsg().getMessage();
 			assertTrue(message.equals("Registration Error: Received unparseable slave information"));
 		}
-	}
+	}*/
 
 
 }
