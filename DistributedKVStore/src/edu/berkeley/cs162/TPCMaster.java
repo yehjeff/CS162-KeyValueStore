@@ -86,7 +86,7 @@ public class TPCMaster {
 					String delims = "[@]";
 					String[] tokens = registerMsg.getMessage().split(delims);
 					Long slaveID = Long.parseLong(tokens[0]);
-					
+
 					if (registerMsg.getMsgType().equals("register")) {
 						slaveServerIDs.add(slaveID);
 						SlaveInfo newEntry = new SlaveInfo(registerMsg.getMessage());
@@ -96,7 +96,6 @@ public class TPCMaster {
 					ackMsg.sendMessage(client);
 				} catch (Exception e) {
 					e.printStackTrace();
-					//ignore bad messages (like unparseable)
 				} finally {
 					try {
 						client.close();
@@ -146,7 +145,7 @@ public class TPCMaster {
 		}
 
 		public Socket connectHost() throws KVException {
-		    // TODO: Optional Implement Me!    
+			// TODO: Optional Implement Me!    
 			try {
 				Socket sock = new Socket(this.hostName, this.port);		//should it be this.server????
 				return sock;
@@ -163,7 +162,7 @@ public class TPCMaster {
 		}
 
 		public void closeHost(Socket sock) throws KVException {
-		    // TODO: Optional Implement Me!
+			// TODO: Optional Implement Me!
 			if (sock == null) {
 				KVMessage exceptMsg = new KVMessage("resp");
 				exceptMsg.setMessage("Unknown Error: no socket given");
@@ -174,7 +173,7 @@ public class TPCMaster {
 			} catch (IOException e) {
 				KVMessage exceptMsg = new KVMessage("resp");
 				exceptMsg.setMessage("Unknown Error: could not close connection");
-		        throw new KVException(exceptMsg);
+				throw new KVException(exceptMsg);
 			}
 		}
 	}
@@ -196,7 +195,7 @@ public class TPCMaster {
 
 	private TreeSet<Long> slaveServerIDs;
 	private HashMap<Long, SlaveInfo> slaveInfoMap;
-	
+
 	private static final int MAX_KEY_SIZE = 256;
 	private static final int MAX_VAL_SIZE = 256 * 1024;
 	/**
@@ -211,10 +210,10 @@ public class TPCMaster {
 
 		// Create registration server
 		regServer = new SocketServer("localhost", 9090);
-		
+
 		this.slaveInfoMap = new HashMap<Long,SlaveInfo>();
 		this.slaveServerIDs = new TreeSet<Long>();
-		
+
 	}
 
 	/**
@@ -481,10 +480,10 @@ public class TPCMaster {
 				info2 = findSuccessor(info1);
 				try {
 					slaveSocket = info2.connectHost();
-	
+
 					slaveSocket.setSoTimeout(TIMEOUT_MILLISECONDS);
 					msg.sendMessage(slaveSocket);
-				
+
 					responseMsg = new KVMessage(slaveSocket.getInputStream());
 					if (responseMsg.getMessage() != null && responseMsg.getMessage().equals("Does not exist")){
 						exceptionMsg = new KVMessage("resp", "Does not exist");
@@ -504,10 +503,10 @@ public class TPCMaster {
 			}finally {
 				masterCache.getWriteLock(key).unlock();
 			}
-		} catch (KVException e1) {
-			throw e1;
-		}catch (Exception e2){
-			e2.printStackTrace();
+		} catch (KVException e) {
+			throw e;
+		}catch (Exception e){
+			e.printStackTrace();
 		} finally {
 			AutoGrader.aghandleGetFinished();
 		}
@@ -528,19 +527,19 @@ public class TPCMaster {
 		String pattern = "-?[0-9]+@[A-Za-z0-9\\.]+:[0-9]+";
 		//String pattern = "[0-9]+@("+ validIpAddressRegex + "|" + validHostnameRegex+"):[0-9]+";
 		Pattern p = Pattern.compile(pattern);
-	    Matcher m = p.matcher(regMsg);
-	    if (!m.matches()) {
+		Matcher m = p.matcher(regMsg);
+		if (!m.matches()) {
 			KVMessage exceptMsg = new KVMessage("resp");
 			exceptMsg.setMessage("Registration Error: Received unparseable slave information");
 			throw new KVException(exceptMsg);
-	    }
+		}
 	}
 
 	public void stop(){
 		regServer.stop();
 	}
-	
-	
+
+
 	public static void checkKey(String key) throws KVException {
 		KVMessage exceptMsg = new KVMessage("resp");
 		if (key == null) {
@@ -556,7 +555,7 @@ public class TPCMaster {
 			throw new KVException(exceptMsg);
 		}
 	}
-	
+
 	public static void checkValue(String value) throws KVException {
 		KVMessage exceptMsg = new KVMessage("resp");
 		if (value == null) {

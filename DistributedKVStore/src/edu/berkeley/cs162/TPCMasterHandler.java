@@ -191,7 +191,6 @@ public class TPCMasterHandler implements NetworkHandler {
  			}
  			catch (KVException e){
  				e.getMsg().sendMessage(client);
- 		//		errorMsg.sendMessage(client);
  			}
  			AutoGrader.agGetFinished(slaveID);
  			
