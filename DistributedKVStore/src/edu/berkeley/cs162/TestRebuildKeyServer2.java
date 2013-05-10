@@ -46,6 +46,7 @@ public class TestRebuildKeyServer2 extends TestCase {
 
 			String logPath = slaveID + "@" + server.getHostname();
 			TPCLog tpcLog = new TPCLog(logPath, keyServer);
+			
 			tpcLog.rebuildKeyServer();
 
 			handler.setTPCLog(tpcLog);
