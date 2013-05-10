@@ -399,6 +399,8 @@ public class TPCMaster {
 			} finally {
 				masterCache.getWriteLock(key).unlock();
 			}
+		} catch (KVException e) {
+			throw e;
 		} catch (Exception e){
 			e.printStackTrace();
 		} finally {
