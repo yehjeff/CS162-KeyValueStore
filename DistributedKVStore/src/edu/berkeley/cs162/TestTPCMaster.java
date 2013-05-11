@@ -8,6 +8,11 @@ import java.net.UnknownHostException;
 
 import org.junit.Test;
 
+import edu.berkeley.cs162.TestRebuildKeyServer.runMaster;
+import edu.berkeley.cs162.TestRebuildKeyServer.runServer1;
+import edu.berkeley.cs162.TestRebuildKeyServer.runServers;
+import edu.berkeley.cs162.TestRebuildKeyServer.runSlaveServer;
+
 import junit.framework.TestCase;
 
 public class TestTPCMaster extends TestCase {
@@ -18,16 +23,21 @@ public class TestTPCMaster extends TestCase {
 	TPCMaster master;
 	KVServer slave1;
 	KVServer slave2;
+	KVServer slave3;
 	SocketServer masterserver;
 	SocketServer slaveserver1;
 	SocketServer slaveserver2;
+	SocketServer slaveserver3;
 	NetworkHandler handler;
 	TPCMasterHandler handler1;
 	TPCMasterHandler handler2;
+	TPCMasterHandler handler3;
 	String logPath1;
 	String logPath2;
+	String logPath3;
 	TPCLog tpcLog1;
 	TPCLog tpcLog2;
+	TPCLog tpcLog3;
 	
 	public class runMaster implements Runnable {
 		
@@ -70,17 +80,18 @@ public class TestTPCMaster extends TestCase {
 				case 2:
 					slaveserver2.run();
 					break;
+				case 3:
+					slaveserver3.run();
+					break;
 				} 
 			} catch (IOException e) {
 			}
 		}
 	}
 	public class runServers implements Runnable {
-	
 		public void run() {
 			startServers();
 		}
-		
 	}
 	public void startServers() {
 		
@@ -109,7 +120,6 @@ public class TestTPCMaster extends TestCase {
 		System.out.println("Starting SlaveServer at " + slaveserver1.getHostname() + ":" + slaveserver1.getPort());
 		new Thread(new runSlaveServer(1)).start();
 		
-
 		System.out.println("Starting SlaveServer at " + slaveserver2.getHostname() + ":" + slaveserver2.getPort());
 		new Thread(new runSlaveServer(2)).start();
 		
@@ -126,9 +136,39 @@ public class TestTPCMaster extends TestCase {
 		} catch (Exception e){
 		}
 	}
+
+	public class runServer1 implements Runnable {
+		public void run() {
+			restartServer1();
+		}
+	}
+	public void restartServer1() {
+		slaveserver1 = new SocketServer("localhost");
+		slaveserver1.addHandler(handler1);
+		try {
+			tpcLog1.rebuildKeyServer();
+			handler1.setTPCLog(tpcLog1);
+			slaveserver1.connect();
+			handler1.registerWithMaster(server, slaveserver1);
+		} catch (KVException e1) {
+		} catch (UnknownHostException e) {
+		} catch (IOException e) {
+		}		
+		System.out.println("ReStarting SlaveServer at " + slaveserver1.getHostname() + ":" + slaveserver1.getPort());
+		new Thread(new runSlaveServer(1)).start();
+	}
+	public void closeServer1() {
+		System.out.println("Closing server1");
+		slaveserver1.stop();
+		handler1.stop();
+		try {
+		//Thread.sleep(10000);
+		} catch (Exception e){
+		}
+	}
 	
 
-	/**@Test
+	@Test
 	public void testHandleGet1() {
 		server = "localhost";
 		port = 8080;			
@@ -196,7 +236,6 @@ public class TestTPCMaster extends TestCase {
 		}
 	}
 	
-<<<<<<< HEAD
 	@Test
 	public void testHandleGet3() {
 		server = "localhost";
@@ -373,7 +412,7 @@ public class TestTPCMaster extends TestCase {
 			closeServers();
 			closeMaster();
 		}
-	}*/
+	}
 
 	@Test
 	public void testHandleDel2() {
@@ -398,11 +437,10 @@ public class TestTPCMaster extends TestCase {
 		try {
 			System.out.println("testHandleDel2()");
 			Thread.sleep(10000);
+			//testing del on a non-existent key
 			client.del("poop");
-			System.out.println("It got here?");
 			fail();		//never gets here
 		} catch (KVException e1) {
-			System.out.println(e1.getMsg().getMessage());
 			assertEquals("Does not exist", e1.getMsg().getMessage());
 		} catch (Exception e2) {
 		} finally {
@@ -410,8 +448,43 @@ public class TestTPCMaster extends TestCase {
 			closeMaster();
 		}
 	}
+
+	@Test
+	public void testHandleDel3() {
+		server = "localhost";
+		port = 6040;			
+
+		master = new TPCMaster(2);
+		slave1 = new KVServer(10, 5);
+		slave2 = new KVServer(10, 5);
+		masterserver = new SocketServer(server, port);
+		slaveserver1 = new SocketServer(server);
+		slaveserver2 = new SocketServer(server);
+		handler = new KVClientHandler(master);
+		handler1 = new TPCMasterHandler(slave1, 1);
+		handler2 = new TPCMasterHandler(slave2, 2);
+		String val = null;
+		
+		new Thread(new runMaster()).start();
+		new Thread(new runServers()).start();
+		KVClient client = new KVClient(server, port);
+
+		try {
+			System.out.println("testHandleDel3()");
+			Thread.sleep(10000);
+			//testing del on a null key
+			client.del(null);
+			fail();		//never gets here
+		} catch (KVException e1) {
+			assertEquals("Unknown Error: Key is null or zero-length", e1.getMsg().getMessage());
+		} catch (Exception e2) {
+		} finally {
+			closeServers();
+			closeMaster();
+		}
+	}
 	
-	/**@Test
+	@Test
 	public void testIsParseable1() {
 		TPCMaster master = new TPCMaster(2);
 		KVMessage regMsg = null;
@@ -464,7 +537,52 @@ public class TestTPCMaster extends TestCase {
 			String message = e.getMsg().getMessage();
 			assertTrue(message.equals("Registration Error: Received unparseable slave information"));
 		}
-	}*/
+	}
 
+
+	@Test
+	//testing that a get still works even if one (or both) of the slaves are down (after a successful put)
+	public void testSlaveDownGet() {
+		//normal server shutdown
+		server = "localhost";
+		port = 8080;			
+
+		master = new TPCMaster(2);
+		slave1 = new KVServer(10, 5);
+		slave2 = new KVServer(10, 5);
+		masterserver = new SocketServer(server, port);
+		slaveserver1 = new SocketServer(server);
+		slaveserver2 = new SocketServer(server);
+		handler = new KVClientHandler(master);
+		handler1 = new TPCMasterHandler(slave1, 1);
+		handler2 = new TPCMasterHandler(slave2, 2);
+		new Thread(new runMaster()).start();
+		new Thread(new runServers()).start();
+		KVClient client = new KVClient(server, port);
+		String val = null;
+		
+		try {
+			System.out.println("testSlaveDownGet()");
+			Thread.sleep(10000);
+			client.put("keyA", "valA");
+			val = client.get("keyA");
+			assertEquals("valA", val);
+			slaveserver1.stop();
+			handler1.stop();
+			val = client.get("keyA");
+			assertEquals("get should find correct key from recovered slave", "valA", val);
+			slaveserver2.stop();
+			handler2.stop();
+			val = client.get("keyA");
+			assertEquals("get should find correct key from recovered slave", "valA", val);
+		}
+		catch (Exception e){
+			fail("Shouldn't have failed");
+		} finally {
+			//close both servers
+			closeServers();
+			closeMaster();
+		}
+	}
 
 }
