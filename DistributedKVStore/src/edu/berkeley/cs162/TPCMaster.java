@@ -383,9 +383,7 @@ public class TPCMaster {
 					KVMessage abortMsg = new KVMessage("abort");
 					sendDecision(id1, abortMsg);
 					sendDecision(id2, abortMsg);
-					System.out.println("responsemsg1: " + responseMsg1.getMsgType());
-					System.out.println("responsemsg2: " + responseMsg2.getMsgType());
-					System.out.println("abortmsg: " + abortMsg.getMessage());
+				
 					//exceptionMsg = new KVMessage ("resp",abortMsg.getMessage());
 					if (responseMsg1.getMsgType().equals("abort")) {
 						exceptionMsg = new KVMessage ("resp", responseMsg1.getMessage());

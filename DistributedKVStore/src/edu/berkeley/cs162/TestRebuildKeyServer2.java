@@ -74,7 +74,7 @@ public class TestRebuildKeyServer2 extends TestCase {
 
 	}
 
-
+/*
 	public void testRebuild(){
 		try{			
 
@@ -85,7 +85,8 @@ public class TestRebuildKeyServer2 extends TestCase {
 			Thread masterThread = new Thread(new Runnable() { public void run() { runMaster(); } } );
 			Thread slaveThread1 = new Thread(new Runnable() { public void run() { runSlave(1); } } );
 			Thread slaveThread2 = new Thread(new Runnable() { public void run() { runSlave(2); } } );
-			masterThread.start(); slaveThread1.start(); slaveThread2.start();
+			masterThread.start();
+			slaveThread1.start(); slaveThread2.start();
 			Thread.sleep(2000);
 
 
@@ -99,12 +100,7 @@ public class TestRebuildKeyServer2 extends TestCase {
 				client.put("key2", "value2");
 				value = client.get("key2");
 				assertTrue(value.equals("value2"));
-				client.put("key3", "value3");
-				value = client.get("key3");
-				assertTrue(value.equals("value3"));
-				client.put("key4", "value4");
-				value = client.get("key4");
-				assertTrue(value.equals("value4"));
+			
 				client.put("key5", "value5");
 				value = client.get("key5");
 				assertTrue(value.equals("value5"));
@@ -129,11 +125,7 @@ public class TestRebuildKeyServer2 extends TestCase {
 				assertTrue(value.equals("value1"));
 				value = client.get("key2");
 				assertTrue(value.equals("value2"));
-				value = client.get("key3");
-				assertTrue(value.equals("value3"));
-
-				value = client.get("key4");
-				assertTrue(value.equals("value4"));
+			
 			} catch (KVException e){
 				e.printStackTrace();
 				fail("bad exception thrown:" + e.getMsg().getMessage());
@@ -145,7 +137,9 @@ public class TestRebuildKeyServer2 extends TestCase {
 				assertTrue(e.getMsg().getMessage().equals("Does not exist"));
 			}
 
-			masterThread.stop();slaveThread1.stop();slaveThread2.stop();
+		//	masterThread.stop();
+			slaveThread1.stop();slaveThread2.stop();
+			Thread.sleep(2000);
 
 
 		}catch (Exception e){
@@ -154,35 +148,65 @@ public class TestRebuildKeyServer2 extends TestCase {
 
 		}
 	}
-
+*/
 
 	public void testRebuildFailInOperation(){
 		try{			
 			masterHostname = InetAddress.getLocalHost().getHostAddress();
 			Thread masterThread = new Thread(new Runnable() { public void run() { runMaster(); } } );
-			Thread slaveThread1 = new Thread(new Runnable() { public void run() { runSlave(1); } } );
-			Thread slaveThread2 = new Thread(new Runnable() { public void run() { runSlave(2); } } );
-			masterThread.start(); slaveThread1.start(); slaveThread2.start();
+			final Thread slaveThread1 = new Thread(new Runnable() { public void run() { runSlave(1); } } );
+			final Thread slaveThread2 = new Thread(new Runnable() { public void run() { runSlave(2); } } );
+			masterThread.start();
+			slaveThread1.start(); slaveThread2.start();
 			Thread.sleep(2000);
 
 
 			KVClient client = new KVClient(masterHostname,8080);
-			/* HOW TO DO THIS IDK ??? */
-			
-			
-			
-			
+			String key = "key1";
+			String value = "value1";
+			int numLoops = 10;
+			for (int i = 0; i < numLoops; i++){
+				try {
+					System.out.println("Loop " + i);
+					new Thread(new Runnable() { public void run() { stopInMilliseconds(slaveThread1,  new Thread(new Runnable() { public void run() { runSlave(1); } } ), 100); } } ).start();
+					client.put("key1", "value1");
+					value = client.get("key1");
+					assertTrue(value.equals("value1"));
+
+					client.put("key2", "value2");
+					value = client.get("key2");
+					assertTrue(value.equals("value2"));
+					client.del("key2");
+				} catch (KVException e){
+					e.printStackTrace();
+					fail("bad exception thrown:" + e.getMsg().getMessage());
+				} 
+				try {
+					value = client.get("key2");
+					fail("should have Does not exist");
+				} catch (KVException e){
+					assertTrue(e.getMsg().getMessage().equals("Does not exist"));
+				}
+			}
+
+
+			//masterThread.stop();
+			slaveThread1.stop();slaveThread2.stop();
+			Thread.sleep(2000);
+
 		} catch (Exception e){
 			e.printStackTrace();
 		}
 	}
 
-	public void stopInMilliseconds(Thread thread, long t){
+	public void stopInMilliseconds(Thread threadOld, Thread threadNew, long t){
 		try {
 			Thread.sleep(t);
 		}catch (Exception e){
 			e.printStackTrace();
 		}
-		thread.stop();
+		System.out.println("\tKilling Slave Server");
+		threadOld.stop();
+		threadNew.start();
 	}
 }
