@@ -2,6 +2,7 @@ package edu.berkeley.cs162;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.Random;
 
 import junit.framework.TestCase;
 
@@ -36,7 +37,7 @@ public class TestRebuildKeyServer2 extends TestCase {
 	}
 	public void runSlave(long slaveID){
 		try {
-			System.out.println("Binding SlaveServer:");
+			System.out.println("Binding SlaveServer " + slaveID + ":");
 			KVServer keyServer = new KVServer(100, 10);
 			SocketServer server;
 			kvServerMap.put(slaveID, keyServer);
@@ -59,7 +60,7 @@ public class TestRebuildKeyServer2 extends TestCase {
 
 			handler.registerWithMaster(masterHostname, server);
 
-			System.out.println("Starting SlaveServer at " + server.getHostname() + ":" + server.getPort());
+			System.out.println("Starting SlaveServer " + slaveID + " at " + server.getHostname() + ":" + server.getPort());
 			server.run();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -164,11 +165,14 @@ public class TestRebuildKeyServer2 extends TestCase {
 			KVClient client = new KVClient(masterHostname,8080);
 			String key = "key1";
 			String value = "value1";
-			int numLoops = 10;
+			int numLoops = 100;
+			final Random rng = new Random();
+		
 			for (int i = 0; i < numLoops; i++){
 				try {
-					System.out.println("Loop " + i);
-					new Thread(new Runnable() { public void run() { stopInMilliseconds(slaveThread2,  new Thread(new Runnable() { public void run() { runSlave(2); } } ), 100); } } ).start();
+					
+					System.out.println("\n\n\n\nLoop " + i);
+					new Thread(new Runnable() { public void run() { stopInMilliseconds(slaveThread2,  new Thread(new Runnable() { public void run() { runSlave(2); } } ), Math.abs(rng.nextLong()%1000)); } } ).start();
 					client.put("key1", "value1");
 					value = client.get("key1");
 					assertTrue(value.equals("value1"));
@@ -177,6 +181,7 @@ public class TestRebuildKeyServer2 extends TestCase {
 					value = client.get("key2");
 					assertTrue(value.equals("value2"));
 					client.del("key2");
+					Thread.sleep(1000);
 				} catch (KVException e){
 					e.printStackTrace();
 					fail("bad exception thrown:" + e.getMsg().getMessage());
@@ -205,7 +210,7 @@ public class TestRebuildKeyServer2 extends TestCase {
 		}catch (Exception e){
 			e.printStackTrace();
 		}
-		System.out.println("\tKilling Slave Server");
+		System.out.println("\tKilling Slave Server after " + t + " milliseconds");
 		threadOld.stop();
 		threadNew.start();
 	}

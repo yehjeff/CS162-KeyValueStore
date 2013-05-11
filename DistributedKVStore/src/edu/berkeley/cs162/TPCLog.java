@@ -140,10 +140,10 @@ public class TPCLog {
 		loadFromDisk();
 		boolean isCommit = false;
 		System.out.println("Rebuilding KVServer...");
-		for (KVMessage entry : entries)
-			System.out.println(entry.getMsgType());
-		
+	
+		int i = 0;
 		for (KVMessage entry : entries) {
+			System.out.print("\t" + i++ + "\t"+entry.getMsgType() + " ");
 			if ((entry.getMsgType().equals("putreq")) || (entry.getMsgType().equals("delreq"))) {  
 				interruptedTpcOperation = entry;
 			} else if (entry.getMsgType().equals("commit")) {
@@ -154,15 +154,16 @@ public class TPCLog {
 				if (isCommit && interruptedTpcOperation != null) {
 					if (interruptedTpcOperation.getMsgType().equals("putreq")) {
 						kvServer.put(interruptedTpcOperation.getKey(), interruptedTpcOperation.getValue());
-						System.out.println("\tPut (" + interruptedTpcOperation.getKey() + "," + interruptedTpcOperation.getValue() + ")");
+						System.out.print("\tPut (" + interruptedTpcOperation.getKey() + "," + interruptedTpcOperation.getValue() + ")");
 					} else {
 						//otherwise interruptedTpcOperation has to be a delreq
 						kvServer.del(interruptedTpcOperation.getKey());
-						System.out.println("\tDel (" + interruptedTpcOperation.getKey()+")");
+						System.out.print("\tDel (" + interruptedTpcOperation.getKey()+")");
 					}
 				}
 				interruptedTpcOperation = null;
 			}
+			System.out.println();
 		}
 		System.out.println("\tRebuild complete!");
 	}
