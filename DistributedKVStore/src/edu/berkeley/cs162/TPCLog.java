@@ -140,6 +140,9 @@ public class TPCLog {
 		loadFromDisk();
 		boolean isCommit = false;
 		System.out.println("Rebuilding KVServer...");
+		for (KVMessage entry : entries)
+			System.out.println(entry.getMsgType());
+		
 		for (KVMessage entry : entries) {
 			if ((entry.getMsgType().equals("putreq")) || (entry.getMsgType().equals("delreq"))) {  
 				interruptedTpcOperation = entry;
@@ -148,7 +151,7 @@ public class TPCLog {
 			} else if (entry.getMsgType().equals("abort")) {
 				isCommit = false;
 			} else if (entry.getMsgType().equals("ack")) {
-				if (isCommit) {
+				if (isCommit && interruptedTpcOperation != null) {
 					if (interruptedTpcOperation.getMsgType().equals("putreq")) {
 						kvServer.put(interruptedTpcOperation.getKey(), interruptedTpcOperation.getValue());
 						System.out.println("\tPut (" + interruptedTpcOperation.getKey() + "," + interruptedTpcOperation.getValue() + ")");
@@ -161,6 +164,7 @@ public class TPCLog {
 				interruptedTpcOperation = null;
 			}
 		}
+		System.out.println("\tRebuild complete!");
 	}
 	
 	/**

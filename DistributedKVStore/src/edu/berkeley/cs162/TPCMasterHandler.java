@@ -254,10 +254,15 @@ public class TPCMasterHandler implements NetworkHandler {
 					String key = originalMessage.getKey();
 					String value = originalMessage.getValue();
 					keyserver.put(key, value);
+					System.out.println("\tSlave putted " + key + "," + value);
+
 				}
 				if (originalMessage.getMsgType().equals("delreq")){
+					
 					String key = originalMessage.getKey();
 					keyserver.del(key);
+					System.out.println("\tSlave del'ed " + key);
+
 				}
 			}
 

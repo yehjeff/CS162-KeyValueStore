@@ -111,7 +111,7 @@ public class AutoGrader {
 		}
 	}
 	
-	private static long STORE_DELAY = 10;
+	private static long STORE_DELAY = 0;
 	
 	private static KVStore dataStore = null;
 	private static KVCache dataCache = null;

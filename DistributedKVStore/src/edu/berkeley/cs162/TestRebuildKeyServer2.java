@@ -168,7 +168,7 @@ public class TestRebuildKeyServer2 extends TestCase {
 			for (int i = 0; i < numLoops; i++){
 				try {
 					System.out.println("Loop " + i);
-					new Thread(new Runnable() { public void run() { stopInMilliseconds(slaveThread1,  new Thread(new Runnable() { public void run() { runSlave(1); } } ), 100); } } ).start();
+					new Thread(new Runnable() { public void run() { stopInMilliseconds(slaveThread2,  new Thread(new Runnable() { public void run() { runSlave(2); } } ), 100); } } ).start();
 					client.put("key1", "value1");
 					value = client.get("key1");
 					assertTrue(value.equals("value1"));
